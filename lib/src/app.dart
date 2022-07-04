@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'pages/login.dart';
 
@@ -13,10 +14,13 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      localizationsDelegates: [GlobalMaterialLocalizations.delegate],
+      supportedLocales: [const Locale('es'), const Locale('ES')],
+      theme: ThemeData(primaryColor: Color.fromRGBO(97, 0, 236, 1)),
       debugShowCheckedModeBanner: false,
-      home: Scaffold(
-        body: LoginPage(),
-      )
+      home: LoginPage(), //Scaffold(
+      //body: LoginPage(),
+      /*)*/
     );
   }
 }
