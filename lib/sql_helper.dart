@@ -76,8 +76,6 @@ class SQLHelper {
     return db.rawQuery(
         'SELECT * FROM TBL_PRECIO WHERE codigoProducto = ? AND idListaPrecio = ?',
         [codigoProducto, idListaPrecio]);
-    /*return db.query('TBL_PRECIO',
-        where: "codigoProducto = ?", whereArgs: [id], limit: 1);*/
   }
 
   static Future<List<Map<String, dynamic>>> igv() async {
@@ -200,6 +198,34 @@ class SQLHelper {
     print('se concreto la migracion');
     return 'Base de datos creada, conectada y tablas creadas';
   }
+
+  static Future<String> limpiarMemoria() async {
+    final db = await SQLHelper.db();
+    await db.rawQuery('DELETE FROM TBL_PEDIDO;');
+    await db.rawQuery('DELETE FROM TBL_PEDIDO_DETALLE;');
+
+    return 'ok';
+  }
+
+  static Future<List<Map<String, dynamic>>> getVoletas(int codigo) async {
+    final db = await SQLHelper.db();
+    return db.query('TBL_DOCUMENTO_VENTA',
+        where: "idCliente = ?", whereArgs: [codigo]);
+  }
+
+  static Future<List<Map<String, dynamic>>> pedidosPendientes() async {
+    final db = await SQLHelper.db();
+    return db.query('TBL_PEDIDO', where: "estadoPedido = ?", whereArgs: [-1]);
+  }
+
+  static Future<List<Map<String, dynamic>>> getDetalles(int _id) async {
+    final db = await SQLHelper.db();
+
+    return db
+        .query("TBL_PEDIDO_DETALLE", where: "idPedido = ?", whereArgs: [_id]);
+  }
+
+  //static Future<List<Map<String, dynamic>>> update
 
   //limpiar
   static Future<String> eliminarTablas() async {

@@ -27,6 +27,10 @@ class DetalleCliente extends StatefulWidget {
 }
 
 class _DetalleClienteState extends State<DetalleCliente> {
+  Color _colorBtn = Color.fromRGBO(97, 0, 236, 1);
+  Color _textBtn = Colors.white;
+  double _fontSize = 18.0;
+
   String user = 'u_wost';
   String pass = '\$w0st#sql+';
 
@@ -115,49 +119,72 @@ class _DetalleClienteState extends State<DetalleCliente> {
                       context: context,
                       builder: (context) {
                         return AlertDialog(
-                          scrollable: true,
-                          title: Center(
-                              child: Row(
-                            children: [
-                              Icon(
-                                Icons.warning_amber,
-                                color: Colors.amber[600],
-                                size: 70.0,
-                              ),
-                              Text('ATENCION')
-                            ],
-                          )),
-                          content: Container(
-                            child: Text(
-                              'ATENCION : Se borrará la información de pedidos/cobranzas registradas para el cliente',
-                              style: TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 18.0,
-                                  fontWeight: FontWeight.w400),
-                            ),
-                          ),
-                          actions: [
-                            Center(
-                              child: Row(
-                                children: [
-                                  Expanded(
-                                      child: MaterialButton(
-                                          color: Colors.grey[300],
-                                          child: Text('SI'),
-                                          onPressed: () {})),
-                                  SizedBox(
-                                    width: 10.0,
+                            scrollable: true,
+                            content: Column(
+                              children: [
+                                Center(
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        Icons.warning_rounded,
+                                        size: 50.0,
+                                        color: Colors.amber[700],
+                                      ),
+                                      Text('ATENCION',
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.w400,
+                                              fontSize: 17.0)),
+                                    ],
                                   ),
-                                  Expanded(
-                                      child: MaterialButton(
-                                          color: Colors.grey[300],
-                                          child: Text('NO'),
-                                          onPressed: () {}))
-                                ],
-                              ),
-                            )
-                          ],
-                        );
+                                ),
+                                Divider(),
+                                Text(
+                                    'ATENCION : Se borrará la información de pedidos/cobranzas registradas para el cliente'),
+                                Divider(),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                        child: MaterialButton(
+                                            color: _colorBtn,
+                                            shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(5.0)),
+                                            child: Text(
+                                              'SI',
+                                              style: TextStyle(color: _textBtn),
+                                            ),
+                                            onPressed: () async {
+                                              Future.delayed(
+                                                  Duration(seconds: 1), () {
+                                                Navigator.pop(context);
+                                              });
+                                              //Navigator.pop(context);
+                                              //_modalSincronizaTodo(context);
+                                            })),
+                                    SizedBox(
+                                      width: 10.0,
+                                    ),
+                                    Expanded(
+                                        child: MaterialButton(
+                                            //color: Colors.red[200],
+                                            shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(5.0),
+                                                side: BorderSide(
+                                                    color: _colorBtn,
+                                                    width: 2.0)),
+                                            child: Text(
+                                              'NO',
+                                              style:
+                                                  TextStyle(color: _colorBtn),
+                                            ),
+                                            onPressed: () {
+                                              Navigator.pop(context);
+                                            }))
+                                  ],
+                                )
+                              ],
+                            ));
                       });
                 },
               ),
@@ -170,8 +197,14 @@ class _DetalleClienteState extends State<DetalleCliente> {
                   size: 30.0,
                 ),
                 onTap: () {
-                  Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => SaldoCliente()));
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => SaldoCliente(
+                              widget.PKCliente,
+                              widget.doc_cliente,
+                              widget.nombre,
+                              widget.saldopendiente)));
                 },
               ),
               SizedBox(

@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
+
+import 'package:elrocio/sql_helper.dart';
 
 class SincronizacionPage extends StatefulWidget {
   SincronizacionPage({Key? key}) : super(key: key);
@@ -13,7 +17,346 @@ class _SincronizacionPageState extends State<SincronizacionPage> {
   Color _textBtn = Colors.white;
   double _fontSize = 18.0;
 
+  String _codigo = '';
+
+  Future setearData() async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+
+    setState(() {
+      _codigo = pref.getString('idOEBS').toString();
+    });
+  }
+
+  void _modalSincronizaTodo(BuildContext context) async {
+    showDialog(
+        context: context,
+        builder: (context) {
+          return Dialog(
+            backgroundColor: Colors.white,
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 20.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  CircularProgressIndicator(
+                    color: _colorBtn,
+                  ),
+                  SizedBox(
+                    height: 15.0,
+                  ),
+                  Text('Sincronizando....')
+                ],
+              ),
+            ),
+          );
+        });
+
+    await Future.delayed(
+      Duration(seconds: 5),
+      () async {
+        _sincronizaTodo();
+      },
+    );
+
+    Navigator.of(context).pop();
+
+    showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            backgroundColor: Colors.white,
+            scrollable: true,
+            content: Column(
+              children: [
+                Center(
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.check_circle,
+                        size: 50.0,
+                        color: Colors.green[400],
+                      ),
+                      Text('Sincronización Correcta',
+                          style: TextStyle(
+                              fontWeight: FontWeight.w400, fontSize: 17.0)),
+                    ],
+                  ),
+                ),
+                Divider(),
+                SizedBox(
+                  height: 10,
+                ),
+                Text('¡ Sincronización Correcta !'),
+                SizedBox(
+                  height: 10,
+                ),
+                Divider(),
+                SizedBox(
+                  height: 10,
+                ),
+                Row(
+                  children: [
+                    Expanded(
+                        child: MaterialButton(
+                            color: _colorBtn,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(5.0)),
+                            child: Text(
+                              'OK',
+                              style: TextStyle(color: _textBtn),
+                            ),
+                            onPressed: () async {
+                              Navigator.of(context).pop();
+                              /*var ruta = MaterialPageRoute(
+                                    builder: (context) => HomePage());
+                                Navigator.push(context, ruta);*/
+                            })),
+                  ],
+                )
+              ],
+            ),
+          );
+        });
+  }
+
+  void _sincronizaTodo() async {
+    String urlSincroniza =
+        "https://qas-avicolas.rocio.com.pe/rocio-comercial/handlers/SC_SincronizaDatosMovil.ashx?codVendedor=${_codigo}";
+
+    final http.Response responseSincroniza = await http.get(
+      Uri.parse(urlSincroniza),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+    );
+    int resp = 0;
+    await SQLHelper.createTablesScript('DROP TABLE IF EXISTS TBL_PEDIDO;');
+    await SQLHelper.createTablesScript(
+        'DROP TABLE IF EXISTS TBL_PEDIDO_DETALLE;');
+    await SQLHelper.createTablesScript(
+        'CREATE TABLE IF NOT EXISTS TBL_PEDIDO( _id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL ,codigoServidor VARCHAR(300), fechaPedido numeric,  fechaPedidoStr VARCHAR(300), codigoCliente VARCHAR(300), subcliente VARCHAR(300), idTipoPedido VARCHAR(300), descTipoPedido VARCHAR(300), tipoPedido VARCHAR(20), idListaPrecio VARCHAR(100), idFormaPago VARCHAR(100), ordenCompra VARCHAR(100), idAlmacenVenta VARCHAR(100), idDireccionEnvio VARCHAR(200), direccionEnvio VARCHAR(300), idDireccionFacturacion VARCHAR(200), direccionFacturacion VARCHAR(300), idEmpresa VARCHAR(100), montoTotal VARCHAR(200), codigoUsuario VARCHAR(100), latitud VARCHAR(200), longitud VARCHAR(200), celdaGPS VARCHAR(150), prioridad VARCHAR(100), estadoPedido VARCHAR(30));');
+    await SQLHelper.createTablesScript(
+        'CREATE TABLE IF NOT EXISTS TBL_PEDIDO_DETALLE( id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL ,idPedido INTEGER, codigoArticulo VARCHAR(100), codigoOEBS VARCHAR(100), idTipoLinea VARCHAR(100), nombreArticulo VARCHAR(300), cantidadKGS VARCHAR(100), cantidadUND VARCHAR(100), cantidadUNDXJaba VARCHAR(100) NULL, cantidadJabas VARCHAR(100) NULL, factorConversion VARCHAR(100), precioUnitario VARCHAR(100), factorConversionV VARCHAR(100), precioUnitarioV VARCHAR(100), monto VARCHAR(100), comentario VARCHAR(100) null, rango_minimo VARCHAR(100) null, rango_maximo VARCHAR(100) null)');
+    String respuestitaString = responseSincroniza.body.toString();
+    var bar = respuestitaString.split(";");
+    bar.forEach((element) async {
+      //print(element);
+      await SQLHelper.createTablesScript(element);
+      resp = 1;
+    });
+  }
+
+  void _modalSincronizaDocumentos(BuildContext context) async {
+    showDialog(
+        context: context,
+        builder: (context) {
+          return Dialog(
+            backgroundColor: Colors.white,
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 20.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  CircularProgressIndicator(
+                    color: _colorBtn,
+                  ),
+                  SizedBox(
+                    height: 15.0,
+                  ),
+                  Text('Sincronizando....')
+                ],
+              ),
+            ),
+          );
+        });
+
+    await Future.delayed(
+      Duration(seconds: 5),
+      () async {
+        _sincronizaTodo();
+      },
+    );
+
+    Navigator.of(context).pop();
+
+    showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            backgroundColor: Colors.white,
+            scrollable: true,
+            content: Column(
+              children: [
+                Center(
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.check_circle,
+                        size: 50.0,
+                        color: Colors.green[400],
+                      ),
+                      Text('Sincronización Correcta',
+                          style: TextStyle(
+                              fontWeight: FontWeight.w400, fontSize: 17.0)),
+                    ],
+                  ),
+                ),
+                Divider(),
+                SizedBox(
+                  height: 10,
+                ),
+                Text('¡ Sincronización Correcta !'),
+                SizedBox(
+                  height: 10,
+                ),
+                Divider(),
+                SizedBox(
+                  height: 10,
+                ),
+                Row(
+                  children: [
+                    Expanded(
+                        child: MaterialButton(
+                            color: _colorBtn,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(5.0)),
+                            child: Text(
+                              'OK',
+                              style: TextStyle(color: _textBtn),
+                            ),
+                            onPressed: () async {
+                              Navigator.of(context).pop();
+                              /*var ruta = MaterialPageRoute(
+                                    builder: (context) => HomePage());
+                                Navigator.push(context, ruta);*/
+                            })),
+                  ],
+                )
+              ],
+            ),
+          );
+        });
+  }
+
+  void _sincronizarDocumento() async {
+    String urlSincroniza =
+        "https://qas-avicolas.rocio.com.pe/rocio-comercial/handlers/SC_SincronizaDatosMovil.ashx?codVendedor=${_codigo}";
+
+    final http.Response responseSincroniza = await http.get(
+      Uri.parse(urlSincroniza),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+    );
+    int resp = 0;
+
+    String respuestitaString = responseSincroniza.body.toString();
+    var bar = respuestitaString.split(";");
+    bar.forEach((element) async {
+      //print(element);
+      await SQLHelper.createTablesScript(element);
+      resp = 1;
+    });
+  }
+
+  void _limpiar() async {
+    showDialog(
+        context: context,
+        builder: (context) {
+          return Dialog(
+            backgroundColor: Colors.white,
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 20.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  CircularProgressIndicator(
+                    color: _colorBtn,
+                  ),
+                  SizedBox(
+                    height: 15.0,
+                  ),
+                  Text('Limpiando....')
+                ],
+              ),
+            ),
+          );
+        });
+
+    await Future.delayed(
+      Duration(seconds: 5),
+      () async {
+        SQLHelper.limpiarMemoria();
+      },
+    );
+
+    Navigator.of(context).pop();
+
+    showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            backgroundColor: Colors.white,
+            scrollable: true,
+            content: Column(
+              children: [
+                Center(
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.check_circle,
+                        size: 50.0,
+                        color: Colors.green[400],
+                      ),
+                      Text('Limpieza Correcta',
+                          style: TextStyle(
+                              fontWeight: FontWeight.w400, fontSize: 17.0)),
+                    ],
+                  ),
+                ),
+                Divider(),
+                SizedBox(
+                  height: 10,
+                ),
+                Text('¡ Se limpio la memoria !'),
+                SizedBox(
+                  height: 10,
+                ),
+                Divider(),
+                SizedBox(
+                  height: 10,
+                ),
+                Row(
+                  children: [
+                    Expanded(
+                        child: MaterialButton(
+                            color: _colorBtn,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(5.0)),
+                            child: Text(
+                              'OK',
+                              style: TextStyle(color: _textBtn),
+                            ),
+                            onPressed: () async {
+                              Navigator.of(context).pop();
+                              /*var ruta = MaterialPageRoute(
+                                    builder: (context) => HomePage());
+                                Navigator.push(context, ruta);*/
+                            })),
+                  ],
+                )
+              ],
+            ),
+          );
+        });
+  }
+
   @override
+  void initState() {
+    setearData();
+    super.initState();
+  }
+
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
@@ -108,7 +451,14 @@ class _SincronizacionPageState extends State<SincronizacionPage> {
                                         'SI',
                                         style: TextStyle(color: _textBtn),
                                       ),
-                                      onPressed: () {})),
+                                      onPressed: () async {
+                                        Future.delayed(Duration(seconds: 1),
+                                            () {
+                                          Navigator.pop(context);
+                                        });
+                                        //Navigator.pop(context);
+                                        _modalSincronizaTodo(context);
+                                      })),
                               SizedBox(
                                 width: 10.0,
                               ),
@@ -124,7 +474,9 @@ class _SincronizacionPageState extends State<SincronizacionPage> {
                                         'NO',
                                         style: TextStyle(color: _colorBtn),
                                       ),
-                                      onPressed: () {}))
+                                      onPressed: () {
+                                        Navigator.pop(context);
+                                      }))
                             ],
                           )
                         ],
@@ -152,7 +504,77 @@ class _SincronizacionPageState extends State<SincronizacionPage> {
               ),
             ],
           ),
-          onPressed: () {}),
+          onPressed: () {
+            showDialog(
+                context: context,
+                builder: (context) {
+                  return AlertDialog(
+                      scrollable: true,
+                      content: Column(
+                        children: [
+                          Center(
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.warning_rounded,
+                                  size: 50.0,
+                                  color: Colors.amber[700],
+                                ),
+                                Text('ATENCION',
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.w400,
+                                        fontSize: 17.0)),
+                              ],
+                            ),
+                          ),
+                          Divider(),
+                          Text(
+                              'ATENCION: Se actualizará la data maestra de documentos de venta. ¿Desea continuar?'),
+                          Divider(),
+                          Row(
+                            children: [
+                              Expanded(
+                                  child: MaterialButton(
+                                      color: _colorBtn,
+                                      shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(5.0)),
+                                      child: Text(
+                                        'SI',
+                                        style: TextStyle(color: _textBtn),
+                                      ),
+                                      onPressed: () async {
+                                        Future.delayed(Duration(seconds: 1),
+                                            () {
+                                          Navigator.pop(context);
+                                        });
+                                        //Navigator.pop(context);
+                                        _modalSincronizaTodo(context);
+                                      })),
+                              SizedBox(
+                                width: 10.0,
+                              ),
+                              Expanded(
+                                  child: MaterialButton(
+                                      //color: Colors.red[200],
+                                      shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(5.0),
+                                          side: BorderSide(
+                                              color: _colorBtn, width: 2.0)),
+                                      child: Text(
+                                        'NO',
+                                        style: TextStyle(color: _colorBtn),
+                                      ),
+                                      onPressed: () {
+                                        Navigator.pop(context);
+                                      }))
+                            ],
+                          )
+                        ],
+                      ));
+                });
+          }),
     );
   }
 
@@ -209,7 +631,9 @@ class _SincronizacionPageState extends State<SincronizacionPage> {
                                         'SI',
                                         style: TextStyle(color: _textBtn),
                                       ),
-                                      onPressed: () {
+                                      onPressed: () async {
+                                        await SQLHelper.limpiarMemoria();
+                                        Navigator.pop(context);
                                         Fluttertoast.showToast(
                                           msg:
                                               'Se eliminaron los pedidos/cobranzas almacenados en memoria',

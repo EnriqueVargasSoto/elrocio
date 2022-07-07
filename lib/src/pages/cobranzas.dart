@@ -2,6 +2,7 @@ import 'package:elrocio/src/pages/detalle_cliente.dart';
 import 'package:elrocio/src/pages/recibo_cobranza.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class CobranzasPage extends StatefulWidget {
   int PKCliente;
@@ -23,8 +24,9 @@ class _CobranzasPageState extends State<CobranzasPage> {
   TextEditingController _numRecibo = TextEditingController();
   final TextEditingController letra = TextEditingController();
 
-  void setearDatos() {
-    letra.text = 'E';
+  void setearDatos() async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    letra.text = pref.getString('nroSerie').toString();
     _textEditingController.text =
         DateFormat('dd/MM/yyyy').format(_selectedDate);
   }

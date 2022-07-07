@@ -1,5 +1,7 @@
+import 'package:elrocio/src/pages/envios.dart';
 import 'package:elrocio/src/pages/login.dart';
 import 'package:elrocio/src/pages/pvivo.dart';
+import 'package:elrocio/src/pages/reportes_pollo_vivo.dart';
 import 'package:elrocio/src/pages/sincronizacion.dart';
 import 'package:elrocio/src/pages/transacciones.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -85,14 +87,17 @@ class _HomePageState extends State<HomePage> {
           ListTile(
             leading: Icon(Icons.airline_stops_sharp),
             title: Text('Envios'),
-            onTap: () => {},
+            onTap: () {
+              var ruta = MaterialPageRoute(builder: (context) => Envios());
+              Navigator.push(context, ruta);
+            },
           ),
           ListTile(
             leading: Icon(Icons.file_copy),
             title: Text('Resumen Pedidos P.V.'),
             onTap: () {
               var ruta =
-                  MaterialPageRoute(builder: (context) => PolloVivoPage());
+                  MaterialPageRoute(builder: (context) => ReportePolloVivo());
               Navigator.push(context, ruta);
             },
           ),

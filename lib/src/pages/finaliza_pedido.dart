@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:convert';
 import 'package:elrocio/sql_helper.dart';
 import 'package:elrocio/src/pages/detalle_cliente.dart';
@@ -80,9 +81,7 @@ class _FinalizaPedidoState extends State<FinalizaPedido> {
   Future<String> obtenerCantidad() async {
     String cantidadcitaItems = await Cart.obtenerCantidad();
     numeroItems = int.parse(cantidadcitaItems);
-    //print(cantidadcitaItems);
     return cantidadcitaItems;
-    //return cantidadcitaItems;
   }
 
   Future<String> obtenerTotal() async {
@@ -114,38 +113,18 @@ class _FinalizaPedidoState extends State<FinalizaPedido> {
   Future<String> obtenerSubtotal() async {
     String subtotal = await Cart.getSubtotal();
     return subtotal;
-    /*var respuestaBDIgv = await SQLHelper.igv();
-    var auxIgv = respuestaBDIgv as List<dynamic>;
-    var igvcito = auxIgv[0]['s_param_valor'];
-    String totalCarrito = await Cart.getTotal();
-
-    double factorcito = 1 + double.parse(igvcito);
-    double subtotal = double.parse(totalCarrito) / factorcito;
-    print(subtotal);
-    subtotalito = subtotal.toStringAsFixed(2).toString();
-    return subtotal.toStringAsFixed(2).toString();*/
   }
 
   Future<String> obtenerIgv() async {
     String igv = await Cart.getIgv();
     return igv;
-    /*var respuestaBDIgv = await SQLHelper.igv();
-    var auxIgv = respuestaBDIgv as List<dynamic>;
-    var igvcito = auxIgv[0]['s_param_valor'];
-    String totalCarrito = await Cart.getTotal();
-
-    double factorcito = 1 + double.parse(igvcito);
-    double subtotal = double.parse(totalCarrito) / factorcito;
-    double igvAuxiliar = double.parse(totalCarrito) - subtotal;
-    print(igvAuxiliar);
-    igvText = igvAuxiliar.toStringAsFixed(2).toString();
-    return igvAuxiliar.toStringAsFixed(2).toString();*/
   }
 
-  Future<String> guardarPedidoTemporal() async {
+  void guardarPedido() async {
     int indice = 0;
     List<dynamic> carrito = await Cart.getProductos();
     List<dynamic> auxDetalle = [];
+
     for (var element in carrito) {
       var auxArreglo = {
         'idPedidoDetalle': indice,
@@ -198,76 +177,137 @@ class _FinalizaPedidoState extends State<FinalizaPedido> {
       'estadoPedido': -1,
       'lstPedidoDetalle': auxDetalle
     };
-    print(arreglo);
-    final http.Response response = await http.post(
-      Uri.parse(url),
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
-      body: jsonEncode(arreglo),
-    );
-    String resp = response.body;
-    var primerValor = resp.split(";");
-    String valorResp = primerValor[0].replaceAll('"', '');
-    String nuevoCodigoServidor = primerValor[1].replaceAll('"', '');
-    print(response.body);
-    print(primerValor);
-    print(primerValor[0]);
-    print(primerValor[0].replaceAll('"', ''));
-    print(primerValor[1]);
-    print(primerValor[1].replaceAll('"', ''));
 
-    int idPedido = await SQLHelper.insertarPedido(
-        nuevoCodigoServidor,
-        0,
-        widget.fechaTexto,
-        widget.PKCliente.toString(),
-        widget.subcliente,
-        widget.idtipoPedido.toString(),
-        widget.tipoPedido,
-        widget.siglas,
-        widget.idListaPrecio.toString(),
-        widget.idterminoPago.toString(),
-        '',
-        atributo1,
-        widget.iddireccionEnvio.toString(),
-        widget.direccionEnvio,
-        widget.iddireccionFacturacion.toString(),
-        widget.direccionFacturacion,
-        '82',
-        totalText,
-        codigo.toString(),
-        "-12.0884319",
-        "-76.9730607",
-        "G",
-        prioridad.text,
-        valorResp);
-    print('idPedido : ${idPedido}');
+    try {
+      final result = await InternetAddress.lookup('google.com');
 
-    carrito.forEach((element) async {
-      await SQLHelper.agregarDetallePedido(
-          idPedido,
-          element['codigoArticulo'].toString(),
-          element['codigoEBS'].toString(),
-          element['idTipoLinea'].toString(),
-          element['nombreArticulo'].toString(),
-          element['cantidadKGS'].toString(),
-          element['cantidadUND'].toString(),
-          element['cantidadUNDXJaba'].toString(),
-          element['cantidadJabas'].toString(),
-          element['factorConversion'].toString(),
-          element['precioUnitario'].toString(),
-          element['factorConversionV'].toString(),
-          element['precioUnitarioV'].toString(),
-          element['monto'].toString(),
-          element['comentario'].toString(),
-          element['rango_minimo'].toString(),
-          element['rango_maximo'].toString());
-    });
+      if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
+        await http
+            .post(
+          Uri.parse(url),
+          headers: <String, String>{
+            'Content-Type': 'application/json; charset=UTF-8',
+          },
+          body: jsonEncode(arreglo),
+        )
+            .then((value) async {
+          String resp = value.body;
+          var primerValor = resp.split(";");
+          String valorResp = primerValor[0].replaceAll('"', '');
+          String nuevoCodigoServidor = primerValor[1].replaceAll('"', '');
+
+          int idPedido = await SQLHelper.insertarPedido(
+              nuevoCodigoServidor,
+              0,
+              widget.fechaTexto,
+              widget.PKCliente.toString(),
+              widget.subcliente,
+              widget.idtipoPedido.toString(),
+              widget.tipoPedido,
+              widget.siglas,
+              widget.idListaPrecio.toString(),
+              widget.idterminoPago.toString(),
+              '',
+              atributo1,
+              widget.iddireccionEnvio.toString(),
+              widget.direccionEnvio,
+              widget.iddireccionFacturacion.toString(),
+              widget.direccionFacturacion,
+              '82',
+              totalText,
+              codigo.toString(),
+              "-12.0884319",
+              "-76.9730607",
+              "G",
+              prioridad.text,
+              valorResp);
+
+          carrito.forEach((element) async {
+            await SQLHelper.agregarDetallePedido(
+                idPedido,
+                element['codigoArticulo'].toString(),
+                element['codigoEBS'].toString(),
+                element['idTipoLinea'].toString(),
+                element['nombreArticulo'].toString(),
+                element['cantidadKGS'].toString(),
+                element['cantidadUND'].toString(),
+                element['cantidadUNDXJaba'].toString(),
+                element['cantidadJabas'].toString(),
+                element['factorConversion'].toString(),
+                element['precioUnitario'].toString(),
+                element['factorConversionV'].toString(),
+                element['precioUnitarioV'].toString(),
+                element['monto'].toString(),
+                element['comentario'].toString(),
+                element['rango_minimo'].toString(),
+                element['rango_maximo'].toString());
+          });
+        });
+      }
+    } on SocketException catch (e) {
+      int idPedido = await SQLHelper.insertarPedido(
+          '',
+          0,
+          widget.fechaTexto,
+          widget.PKCliente.toString(),
+          widget.subcliente,
+          widget.idtipoPedido.toString(),
+          widget.tipoPedido,
+          widget.siglas,
+          widget.idListaPrecio.toString(),
+          widget.idterminoPago.toString(),
+          '',
+          atributo1,
+          widget.iddireccionEnvio.toString(),
+          widget.direccionEnvio,
+          widget.iddireccionFacturacion.toString(),
+          widget.direccionFacturacion,
+          '82',
+          totalText,
+          codigo.toString(),
+          "-12.0884319",
+          "-76.9730607",
+          "G",
+          prioridad.text,
+          '-1');
+
+      carrito.forEach((element) async {
+        await SQLHelper.agregarDetallePedido(
+            idPedido,
+            element['codigoArticulo'].toString(),
+            element['codigoEBS'].toString(),
+            element['idTipoLinea'].toString(),
+            element['nombreArticulo'].toString(),
+            element['cantidadKGS'].toString(),
+            element['cantidadUND'].toString(),
+            element['cantidadUNDXJaba'].toString(),
+            element['cantidadJabas'].toString(),
+            element['factorConversion'].toString(),
+            element['precioUnitario'].toString(),
+            element['factorConversionV'].toString(),
+            element['precioUnitarioV'].toString(),
+            element['monto'].toString(),
+            element['comentario'].toString(),
+            element['rango_minimo'].toString(),
+            element['rango_maximo'].toString());
+      });
+    }
 
     Cart.vaciarCarrito();
+  }
 
-    return 'se guardo';
+  void pruebaConxion() async {
+    try {
+      final result = await InternetAddress.lookup('google.com');
+
+      if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
+        print('connected');
+        print(result);
+      }
+    } on SocketException catch (e) {
+      print('not connected');
+      print(e);
+    }
   }
 
   @override
@@ -440,7 +480,9 @@ class _FinalizaPedidoState extends State<FinalizaPedido> {
                             actions: [
                               TextButton(
                                   onPressed: () {
-                                    var respuestita = guardarPedidoTemporal();
+                                    //var respuestita = guardarPedidoTemporal();
+                                    //pruebaConxion();
+                                    guardarPedido();
 
                                     var ruta = MaterialPageRoute(
                                         builder: (context) => DetalleCliente(
