@@ -65,11 +65,19 @@ class _DetalleClienteState extends State<DetalleCliente> {
     _nombre.text = widget.nombre.toString();
     _documento.text = widget.doc_cliente.toString();
     _saldo.text = widget.saldopendiente.toString();
+    _textEditingController.text =
+        DateFormat('dd/MM/yyyy').format(_selectedDate);
+    List<dynamic> arrDirecciones =
+        await SQLHelper.buscaDireccion(widget.PKCliente);
+    _direccion.text = arrDirecciones[0]['direccionEnvio'];
+    print('la direccion es : ${_direccion.text}');
   }
 
   Future<List<dynamic>> obtenerDirecciones() async {
     List<dynamic> arrDirecciones =
         await SQLHelper.buscaDireccion(widget.PKCliente);
+    _direccion.text = arrDirecciones[0]['direccionEnvio'];
+    print('la direccion es : ${_direccion.text}');
     return arrDirecciones;
   }
 

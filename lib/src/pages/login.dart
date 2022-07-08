@@ -42,7 +42,7 @@ class _LoginPageState extends State<LoginPage> {
       final result = await InternetAddress.lookup('google.com');
 
       if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
-        _fetchNew(context);
+        _auth(context);
       }
     } on SocketException catch (e) {
       showDialog(
@@ -120,7 +120,7 @@ class _LoginPageState extends State<LoginPage> {
     pref.setString('tipoPedido', usuario['tipoPedido'].toString());
   }
 
-  void _fetchNew(BuildContext context) async {
+  void _auth(BuildContext context) async {
     showDialog(
         context: context,
         builder: (context) {
@@ -168,119 +168,95 @@ class _LoginPageState extends State<LoginPage> {
     )
         .then((value) async {
       Map respuesta = json.decode(value.body);
-      Navigator.pop(context);
 
       if (respuesta['idResultado'] == 1) {
         _setearData(respuesta);
 
-        showDialog(
-            context: context,
-            builder: (context) {
-              return AlertDialog(
-                backgroundColor: Colors.white,
-                scrollable: true,
-                content: Column(
-                  children: [
-                    Center(
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.check_circle,
-                            size: 50.0,
-                            color: Colors.green[400],
-                          ),
-                          Text('Logueo Correcto',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.w400, fontSize: 17.0)),
-                        ],
-                      ),
-                    ),
-                    Divider(),
-                    SizedBox(
-                      height: 10,
-                    ),
-                    Text('${respuesta['nombres']}.'),
-                    SizedBox(
-                      height: 10,
-                    ),
-                    Divider(),
-                    SizedBox(
-                      height: 10,
-                    ),
-                    Row(
+        String urlSincroniza =
+            "https://qas-avicolas.rocio.com.pe/rocio-comercial/handlers/SC_SincronizaDatosMovil.ashx?codVendedor=${respuesta['idOEBS']}";
+        await http.get(
+          Uri.parse(urlSincroniza),
+          headers: <String, String>{
+            'Content-Type': 'application/json; charset=UTF-8',
+          },
+        ).then((value1) async {
+          String respuestitaString = value1.body.toString();
+          var bar = respuestitaString.split(";");
+
+          await SQLHelper.createTablesScript(
+              'DROP TABLE IF EXISTS TBL_PEDIDO;');
+          await SQLHelper.createTablesScript(
+              'DROP TABLE IF EXISTS TBL_PEDIDO_DETALLE;');
+          await SQLHelper.createTablesScript(
+              'CREATE TABLE IF NOT EXISTS TBL_PEDIDO( _id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL ,codigoServidor VARCHAR(300), fechaPedido numeric,  fechaPedidoStr VARCHAR(300), codigoCliente VARCHAR(300), subcliente VARCHAR(300), idTipoPedido VARCHAR(300), descTipoPedido VARCHAR(300), tipoPedido VARCHAR(20), idListaPrecio VARCHAR(100), idFormaPago VARCHAR(100), ordenCompra VARCHAR(100), idAlmacenVenta VARCHAR(100), idDireccionEnvio VARCHAR(200), direccionEnvio VARCHAR(300), idDireccionFacturacion VARCHAR(200), direccionFacturacion VARCHAR(300), idEmpresa VARCHAR(100), montoTotal VARCHAR(200), codigoUsuario VARCHAR(100), latitud VARCHAR(200), longitud VARCHAR(200), celdaGPS VARCHAR(150), prioridad VARCHAR(100), estadoPedido VARCHAR(30));');
+          await SQLHelper.createTablesScript(
+              'CREATE TABLE IF NOT EXISTS TBL_PEDIDO_DETALLE( id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL ,idPedido INTEGER, codigoArticulo VARCHAR(100), codigoOEBS VARCHAR(100), idTipoLinea VARCHAR(100), nombreArticulo VARCHAR(300), cantidadKGS VARCHAR(100), cantidadUND VARCHAR(100), cantidadUNDXJaba VARCHAR(100) NULL, cantidadJabas VARCHAR(100) NULL, factorConversion VARCHAR(100), precioUnitario VARCHAR(100), factorConversionV VARCHAR(100), precioUnitarioV VARCHAR(100), monto VARCHAR(100), comentario VARCHAR(100) null, rango_minimo VARCHAR(100) null, rango_maximo VARCHAR(100) null)');
+
+          await abcDef(bar).then((value2) async {
+            /*var ruta = MaterialPageRoute(builder: (context) => HomePage());
+            Navigator.of(_scaffoldKey.currentContext!).push(ruta);*/
+            Navigator.pop(context);
+            showDialog(
+                context: context,
+                builder: (context) {
+                  return AlertDialog(
+                    backgroundColor: Colors.white,
+                    scrollable: true,
+                    content: Column(
                       children: [
-                        Expanded(
-                            child: MaterialButton(
-                                color: _colorBtn,
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(5.0)),
-                                child: Text(
-                                  'OK',
-                                  style: TextStyle(color: _textBtn),
-                                ),
-                                onPressed: () async {
-                                  Navigator.pop(context);
-
-                                  showDialog(
-                                      context: context,
-                                      builder: (context) {
-                                        return Dialog(
-                                          backgroundColor: Colors.white,
-                                          child: Padding(
-                                            padding: EdgeInsets.symmetric(
-                                                vertical: 20.0),
-                                            child: Column(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                CircularProgressIndicator(
-                                                  color: _colorBtn,
-                                                ),
-                                                SizedBox(
-                                                  height: 15.0,
-                                                ),
-                                                Text('Sincronizando....')
-                                              ],
-                                            ),
-                                          ),
-                                        );
-                                      });
-
-                                  String urlSincroniza =
-                                      "https://qas-avicolas.rocio.com.pe/rocio-comercial/handlers/SC_SincronizaDatosMovil.ashx?codVendedor=${respuesta['idOEBS']}";
-                                  await http.get(
-                                    Uri.parse(urlSincroniza),
-                                    headers: <String, String>{
-                                      'Content-Type':
-                                          'application/json; charset=UTF-8',
-                                    },
-                                  ).then((value1) async {
-                                    String respuestitaString =
-                                        value1.body.toString();
-                                    var bar = respuestitaString.split(";");
-
-                                    await SQLHelper.createTablesScript(
-                                        'DROP TABLE IF EXISTS TBL_PEDIDO;');
-                                    await SQLHelper.createTablesScript(
-                                        'DROP TABLE IF EXISTS TBL_PEDIDO_DETALLE;');
-                                    await SQLHelper.createTablesScript(
-                                        'CREATE TABLE IF NOT EXISTS TBL_PEDIDO( _id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL ,codigoServidor VARCHAR(300), fechaPedido numeric,  fechaPedidoStr VARCHAR(300), codigoCliente VARCHAR(300), subcliente VARCHAR(300), idTipoPedido VARCHAR(300), descTipoPedido VARCHAR(300), tipoPedido VARCHAR(20), idListaPrecio VARCHAR(100), idFormaPago VARCHAR(100), ordenCompra VARCHAR(100), idAlmacenVenta VARCHAR(100), idDireccionEnvio VARCHAR(200), direccionEnvio VARCHAR(300), idDireccionFacturacion VARCHAR(200), direccionFacturacion VARCHAR(300), idEmpresa VARCHAR(100), montoTotal VARCHAR(200), codigoUsuario VARCHAR(100), latitud VARCHAR(200), longitud VARCHAR(200), celdaGPS VARCHAR(150), prioridad VARCHAR(100), estadoPedido VARCHAR(30));');
-                                    await SQLHelper.createTablesScript(
-                                        'CREATE TABLE IF NOT EXISTS TBL_PEDIDO_DETALLE( id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL ,idPedido INTEGER, codigoArticulo VARCHAR(100), codigoOEBS VARCHAR(100), idTipoLinea VARCHAR(100), nombreArticulo VARCHAR(300), cantidadKGS VARCHAR(100), cantidadUND VARCHAR(100), cantidadUNDXJaba VARCHAR(100) NULL, cantidadJabas VARCHAR(100) NULL, factorConversion VARCHAR(100), precioUnitario VARCHAR(100), factorConversionV VARCHAR(100), precioUnitarioV VARCHAR(100), monto VARCHAR(100), comentario VARCHAR(100) null, rango_minimo VARCHAR(100) null, rango_maximo VARCHAR(100) null)');
-
-                                    await abcDef(bar).then((value2) async {
+                        Center(
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.check_circle,
+                                size: 50.0,
+                                color: Colors.green[400],
+                              ),
+                              Text('Logueo Correcto',
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w400,
+                                      fontSize: 17.0)),
+                            ],
+                          ),
+                        ),
+                        Divider(),
+                        SizedBox(
+                          height: 10,
+                        ),
+                        Text('${respuesta['nombres']}.'),
+                        SizedBox(
+                          height: 10,
+                        ),
+                        Divider(),
+                        SizedBox(
+                          height: 10,
+                        ),
+                        Row(
+                          children: [
+                            Expanded(
+                                child: MaterialButton(
+                                    color: _colorBtn,
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(5.0)),
+                                    child: Text(
+                                      'OK',
+                                      style: TextStyle(color: _textBtn),
+                                    ),
+                                    onPressed: () {
                                       var ruta = MaterialPageRoute(
                                           builder: (context) => HomePage());
                                       Navigator.of(_scaffoldKey.currentContext!)
                                           .push(ruta);
-                                    });
-                                  });
-                                })),
+                                    }))
+                          ],
+                        )
                       ],
-                    )
-                  ],
-                ),
-              );
-            });
+                    ),
+                  );
+                });
+          });
+        });
       } else {
         showDialog(
             context: context,
@@ -342,17 +318,18 @@ class _LoginPageState extends State<LoginPage> {
   Future<int> abcDef(bar) async {
     int resp = 0;
     print(bar.length);
-    await bar.forEach((element) async {
+    /*await bar.forEach((element) async {
       //print(element);
       await SQLHelper.createTablesScript(element);
       resp = 1;
-    });
+    });*/
 
     for (var i = 0; i < bar.length; i++) {
       await SQLHelper.createTablesScript(bar[i]);
 
       if (i == (bar.length - 1)) {
         print('llego a su fin');
+        resp = 1;
         return resp;
       }
     }

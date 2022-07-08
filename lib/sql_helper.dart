@@ -225,6 +225,11 @@ class SQLHelper {
         .query("TBL_PEDIDO_DETALLE", where: "idPedido = ?", whereArgs: [_id]);
   }
 
+  static Future<List<Map<String, dynamic>>> traerCliente(String id) async {
+    final db = await SQLHelper.db();
+    return db.query("TBL_CLIENTE", where: "PKCliente = ?", whereArgs: [id]);
+  }
+
   //static Future<List<Map<String, dynamic>>> update
 
   //limpiar
