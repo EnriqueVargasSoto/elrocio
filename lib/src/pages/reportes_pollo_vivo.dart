@@ -16,11 +16,13 @@ class ReportePolloVivo extends StatefulWidget {
 class _ReportePolloVivoState extends State<ReportePolloVivo> {
   DateTime _selectedDate = DateTime.now();
   String _fecha = '';
+  String _fechaEnvio = '';
   String url =
       "https://qas-avicolas.rocio.com.pe/rocio-comercial/handlers/SC_ListarPedidos.ashx";
 
   void setearDatos() {
     _fecha = DateFormat('dd/MM/yyyy').format(_selectedDate);
+    _fechaEnvio = DateFormat('yyyy-dd-MM').format(_selectedDate);
   }
 
   Future<List<dynamic>> getPedidosPolloVivo() async {
@@ -42,32 +44,48 @@ class _ReportePolloVivoState extends State<ReportePolloVivo> {
         "clase": "",
         "resultado": "",
         "idResultado": "0"*/
-        "codigo": "15",
-        "compania": "82",
-        "fechaCaja": "2022-07-07",
-        "idCaja": "10925",
-        "idOEBS": "15",
+        "codigo": pref.getString('codigo').toString(),
+        "compania": pref.getString('compania').toString(),
+        "fechaCaja": _fechaEnvio,
+        "idCaja": pref.getString('idCaja').toString(),
+        "idOEBS": pref.getString('codigo').toString(),
         "idResultado": "1",
-        "login": "0050",
-        "nombres": "ROBERTO NAVARRO",
-        "nroSerie": "E",
-        "password": "95DD84C617999229B78C5F962FFB585B2D6B24AF",
-        "resultado": "Bienvenido ROBERTO NAVARRO",
+        "login": pref.getString('login').toString(),
+        "nombres": pref.getString('nombres').toString(),
+        "nroSerie": pref.getString('nroSerie').toString(),
+        "password": pref.getString('password').toString(),
+        "resultado": pref.getString('resultado').toString(),
         "tipoPedido": "PV"
       }),
     )
         .then((value) {
       arrPedidos = json.decode(value.body);
-      print(arrPedidos);
     });
 
     return arrPedidos;
   }
 
-  Future<List<dynamic>> _datosClientes(int codigo) async {
-    List<dynamic> auxArrCliente = await SQLHelper.traerCliente('2446055');
+  Future<String> _datosClientes(String codigo) async {
+    List<dynamic> auxArrCliente = await SQLHelper.traerCliente(codigo);
+    Map<String, dynamic> auxAux = auxArrCliente.first;
 
-    return auxArrCliente;
+    String _aucNombre = auxAux['nombre'];
+    return _aucNombre;
+  }
+
+  Future<String> _obtenerTipo(idTipoPedido) async {
+    List<dynamic> arrTipos = await SQLHelper.buscarGeneral(idTipoPedido);
+    Map<String, dynamic> auxAux = arrTipos.first;
+    String tipo = auxAux['nombre'];
+    return tipo;
+  }
+
+  Future<String> jajajaja(idDireccion) async {
+    List<dynamic> arrDireccion =
+        await SQLHelper.detalleDireccion(int.parse(idDireccion));
+    Map<String, dynamic> auxAux = arrDireccion.first;
+    String direccion = auxAux['direccionEnvio'];
+    return direccion;
   }
 
   @override
@@ -205,38 +223,33 @@ class _ReportePolloVivoState extends State<ReportePolloVivo> {
     final List<Widget> detalle = [];
     int indice = 0;
     data.forEach((element) {
+      double monto = 0.0;
       indice++;
+      List<dynamic> arrDetalle = element['lstPedidoDetalle'];
+
+      arrDetalle.forEach((element) {
+        monto += double.parse(element['monto']);
+      });
+
       final widgetTemp = Container(
         width: double.infinity,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _datosCliente(int.parse(element['codigoCliente'])),
+            _datosCliente(element['codigoCliente'], indice),
             SizedBox(
               height: 10.0,
             ),
-            Text(
-              'Total: 509.60 - Tipo : TRU-VT-GRV-POLLO VIVO',
-              style: TextStyle(
-                  color: Colors.black,
-                  fontWeight: FontWeight.w400,
-                  fontSize: 15.0),
+            _tipo(element['idTipoPedido'], monto),
+            SizedBox(
+              height: 5.0,
             ),
+            _direccionWidget(element['idDireccionEnvio']),
             SizedBox(
               height: 5.0,
             ),
             Text(
-              'Dir : asdaskdjhakdhakdhakdhkasdhakjhdkajhdkajdhkajsdhkajdhkasdhajkdhajsdhjkahdkjasdkjasdhkjasdhasjkdkashdasjkdh',
-              style: TextStyle(
-                  color: Colors.black,
-                  fontWeight: FontWeight.w400,
-                  fontSize: 15.0),
-            ),
-            SizedBox(
-              height: 5.0,
-            ),
-            Text(
-              'Sub Cliente: NAYSER',
+              'Sub Cliente: ${element['subcliente']}',
               style: TextStyle(
                   color: Colors.black,
                   fontWeight: FontWeight.w400,
@@ -254,15 +267,44 @@ class _ReportePolloVivoState extends State<ReportePolloVivo> {
     return detalle;
   }
 
-  Widget _datosCliente(codigo) {
+  Widget _datosCliente(String codigo, int indice) {
     return FutureBuilder(
-      future: _datosClientes(2446055),
+      future: _datosClientes(codigo),
       initialData: [],
       builder: (BuildContext context, AsyncSnapshot snapshot) {
         return Text(
-          '1 - ${snapshot.data[0]['nombre']}',
+          '${indice} - ${snapshot.data}',
           style: TextStyle(
               color: Colors.black, fontWeight: FontWeight.bold, fontSize: 20.0),
+        );
+      },
+    );
+  }
+
+  Widget _tipo(idTipo, monto) {
+    return FutureBuilder(
+      future: _obtenerTipo(idTipo),
+      initialData: [],
+      builder: (BuildContext context, AsyncSnapshot snapshot) {
+        return Text(
+          'Total: ${monto} - Tipo : ${snapshot.data}',
+          style: TextStyle(
+              color: Colors.black, fontWeight: FontWeight.w400, fontSize: 15.0),
+        );
+      },
+    );
+  }
+
+  Widget _direccionWidget(idDireccion) {
+    return FutureBuilder(
+      future: jajajaja(idDireccion),
+      initialData: [],
+      builder: (BuildContext context, AsyncSnapshot snapshot) {
+        print('la data es : ${snapshot.data}');
+        return Text(
+          'Dir : ${snapshot.data}',
+          style: TextStyle(
+              color: Colors.black, fontWeight: FontWeight.w400, fontSize: 15.0),
         );
       },
     );
