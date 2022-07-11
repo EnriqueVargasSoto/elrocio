@@ -20,6 +20,7 @@ class CobranzasPage extends StatefulWidget {
 
 class _CobranzasPageState extends State<CobranzasPage> {
   DateTime _selectedDate = DateTime.now();
+  String _fechaString = DateFormat('dd/MM/yyyy').format(DateTime.now());
   TextEditingController _textEditingController = TextEditingController();
   TextEditingController _numRecibo = TextEditingController();
   final TextEditingController letra = TextEditingController();
@@ -27,8 +28,7 @@ class _CobranzasPageState extends State<CobranzasPage> {
   void setearDatos() async {
     SharedPreferences pref = await SharedPreferences.getInstance();
     letra.text = pref.getString('nroSerie').toString();
-    _textEditingController.text =
-        DateFormat('dd/MM/yyyy').format(_selectedDate);
+    _fechaString = DateFormat('dd/MM/yyyy').format(DateTime.now());
   }
 
   @override
@@ -82,7 +82,7 @@ class _CobranzasPageState extends State<CobranzasPage> {
                           widget.doc_cliente,
                           letra.text,
                           _numRecibo.text,
-                          _textEditingController.text));
+                          _fechaString));
                   Navigator.push(context, ruta);
                 },
               )),
@@ -214,7 +214,7 @@ class _CobranzasPageState extends State<CobranzasPage> {
       child: MaterialButton(
           color: Color.fromRGBO(97, 0, 236, 1),
           child: Text(
-            _textEditingController.text,
+            _fechaString,
             style: TextStyle(color: Colors.white),
           ),
           onPressed: () {
@@ -235,7 +235,7 @@ class _CobranzasPageState extends State<CobranzasPage> {
               print(' este es el formato : ${formattedDate}');
 
               setState(() {
-                _textEditingController.text = formattedDate;
+                _fechaString = formattedDate;
               });
               //DateFormat.yMMMMd(languageCode).format(pickedDate);
             });

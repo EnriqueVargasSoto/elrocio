@@ -230,6 +230,12 @@ class SQLHelper {
     return db.query("TBL_CLIENTE", where: "PKCliente = ?", whereArgs: [id]);
   }
 
+  static Future<List<Map<String, dynamic>>> getDocumentos(int idCliente) async {
+    final db = await SQLHelper.db();
+    return db.query("TBL_DOCUMENTO_VENTA",
+        where: "idCliente = ?", whereArgs: [idCliente]);
+  }
+
   //static Future<List<Map<String, dynamic>>> update
 
   //limpiar

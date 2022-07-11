@@ -1,20 +1,18 @@
 import 'package:elrocio/sql_helper.dart';
+import 'package:elrocio/src/pages/agregar_documento.dart';
 import 'package:elrocio/src/pages/documentos_por_cobrar.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-class DetallePago extends StatefulWidget {
-  DetallePago({Key? key}) : super(key: key);
+class NuevoPago extends StatefulWidget {
+  int PKCliente;
+  NuevoPago(this.PKCliente, {Key? key}) : super(key: key);
 
   @override
-  State<DetallePago> createState() => _DetallePagoState();
+  State<NuevoPago> createState() => _NuevoPagoState();
 }
 
-class _DetallePagoState extends State<DetallePago> {
-  Color _colorBtn = Color.fromRGBO(97, 0, 236, 1);
-  Color _textBtn = Colors.white;
-  double _fontSize = 18.0;
-
+class _NuevoPagoState extends State<NuevoPago> {
   bool isChecked = false;
   bool isCheckedAgen = false;
   TextInputType tipoText = TextInputType.phone;
@@ -56,7 +54,7 @@ class _DetallePagoState extends State<DetallePago> {
       child: Scaffold(
         appBar: AppBar(
           backgroundColor: Color.fromRGBO(97, 0, 236, 1),
-          title: Text('Detalle de Pago'),
+          title: Text('Nuevo Pago'),
           centerTitle: true,
           actions: [
             GestureDetector(
@@ -64,6 +62,12 @@ class _DetallePagoState extends State<DetallePago> {
                 Icons.add_circle_sharp,
                 size: 30.0,
               ),
+              onTap: () {
+                var ruta = MaterialPageRoute(
+                    builder: (context) =>
+                        AgregarDocumento(widget.PKCliente, _numOperacion.text));
+                Navigator.push(context, ruta);
+              },
             ),
             SizedBox(
               width: 10.0,
@@ -74,76 +78,10 @@ class _DetallePagoState extends State<DetallePago> {
                 size: 30.0,
               ),
               onTap: () {
-                showDialog(
-                    context: context,
-                    builder: (context) {
-                      return AlertDialog(
-                        scrollable: true,
-                        content: Column(
-                          children: [
-                            Center(
-                              child: Row(
-                                children: [
-                                  Icon(
-                                    Icons.warning_rounded,
-                                    size: 50.0,
-                                    color: Colors.amber[700],
-                                  ),
-                                  Text('ATENCION',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.w400,
-                                          fontSize: 17.0)),
-                                ],
-                              ),
-                            ),
-                            Divider(),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text('Se guardará el voucher: 12345QW'),
-                                Text('Monto Voucher: S/ 2,500.00'),
-                                Text('Monto Aplicado: S/ 0.00'),
-                                Text('Monto Anticipo: S/ 2,500.00')
-                              ],
-                            ),
-                            Divider(),
-                            Row(
-                              children: [
-                                Expanded(
-                                    child: MaterialButton(
-                                        color: _colorBtn,
-                                        shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(5.0)),
-                                        child: Text(
-                                          'SI',
-                                          style: TextStyle(color: _textBtn),
-                                        ),
-                                        onPressed: () async {})),
-                                SizedBox(
-                                  width: 10.0,
-                                ),
-                                Expanded(
-                                    child: MaterialButton(
-                                        //color: Colors.red[200],
-                                        shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(5.0),
-                                            side: BorderSide(
-                                                color: _colorBtn, width: 2.0)),
-                                        child: Text(
-                                          'NO',
-                                          style: TextStyle(color: _colorBtn),
-                                        ),
-                                        onPressed: () {
-                                          Navigator.pop(context);
-                                        }))
-                              ],
-                            )
-                          ],
-                        ),
-                      );
-                    });
+                var ruta = MaterialPageRoute(
+                    builder: (context) =>
+                        DocumentosPorCobrar(_numOperacion.text));
+                Navigator.push(context, ruta);
               },
             ),
             SizedBox(

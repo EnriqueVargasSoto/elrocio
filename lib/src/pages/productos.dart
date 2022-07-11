@@ -2,6 +2,7 @@ import 'package:elrocio/src/pages/pedido_pollo_vivo.dart';
 import 'package:elrocio/src/services/cart.dart';
 import 'package:flutter/material.dart';
 import 'package:elrocio/sql_helper.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class Productos extends StatefulWidget {
   int PKCliente;
@@ -78,6 +79,8 @@ class _ProductosState extends State<Productos> {
   String atributo1 = '';
   String atributo2 = '';
 
+  int rptaPrecio = 0;
+
   Future<List<dynamic>> getProductos(String consulta) async {
     List<dynamic> arrProductos =
         await SQLHelper.busquedaProducto(tipo, consulta);
@@ -87,8 +90,10 @@ class _ProductosState extends State<Productos> {
   Future<String> obtenerPrimerPrecio(int id, int codCliente) async {
     List<dynamic> _primerPrecio = await SQLHelper.pimerPrecio(id, codCliente);
     if (_primerPrecio.length > 0) {
+      rptaPrecio = 1;
       return _primerPrecio[0]['precioProducto'];
     } else {
+      rptaPrecio = 0;
       return 'Sin Precio';
     }
   }
@@ -314,62 +319,42 @@ class _ProductosState extends State<Productos> {
         width: double.infinity,
         child: GestureDetector(
           onTap: () async {
-            inicalizamosVariables(element);
+            String condicion = await obtenerPrimerPrecio(
+                element['codigo'], widget.idListaPrecio);
+            if (condicion == 'Sin Precio') {
+              Fluttertoast.showToast(
+                msg:
+                    'El artículo no tiene modificador ni lista de precio asignada',
+                //toastLength: Toast.LENGTH_SHORT,
+                //gravity: ToastGravity.BOTTOM,
+                //timeInSecForIos: 1,
+                //backgroundColor: Colors.red,
+                /*textColor: Colors.yellow*/
+              );
+            } else {
+              inicalizamosVariables(element);
 
-            showDialog(
-                context: context,
-                builder: (context) {
-                  return AlertDialog(
-                      //alignment: Alignment.center,
-                      actionsAlignment: MainAxisAlignment.center,
-                      scrollable: true,
-                      title: Text(
-                          '${element['codigoOEBS']} - ${element['nombreProducto']}'),
-                      content: Container(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Text('Factor de Conversión : '),
-                                Flexible(
-                                  child: TextField(
-                                      keyboardType: TextInputType.phone,
-                                      controller: factorConversion,
-                                      textAlign: TextAlign.center,
-                                      maxLines: 1,
-                                      decoration: new InputDecoration(
-                                        contentPadding: EdgeInsets.all(5.0),
-                                        isDense: true,
-                                        enabledBorder: const OutlineInputBorder(
-                                          borderSide: const BorderSide(
-                                              color: Colors.grey, width: 0.0),
-                                        ),
-                                        focusedBorder: OutlineInputBorder(
-                                          borderSide: const BorderSide(
-                                              color: Colors.grey, width: 0.0),
-                                        ),
-                                      )),
-                                ),
-                              ],
-                            ),
-                            SizedBox(
-                              height: 30.0,
-                            ),
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Flexible(
-                                    child: Column(
-                                  children: [
-                                    Text('Precio Unit(Kg) : '),
-                                    SizedBox(
-                                      height: 10.0,
-                                    ),
-                                    TextField(
-                                        enabled: false,
-                                        controller: precioUnit,
+              showDialog(
+                  context: context,
+                  builder: (context) {
+                    return AlertDialog(
+                        //alignment: Alignment.center,
+                        actionsAlignment: MainAxisAlignment.center,
+                        scrollable: true,
+                        title: Text(
+                            '${element['codigoOEBS']} - ${element['nombreProducto']}'),
+                        content: Container(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Text('Factor de Conversión : '),
+                                  Flexible(
+                                    child: TextField(
+                                        keyboardType: TextInputType.phone,
+                                        controller: factorConversion,
                                         textAlign: TextAlign.center,
                                         maxLines: 1,
                                         decoration: new InputDecoration(
@@ -384,284 +369,336 @@ class _ProductosState extends State<Productos> {
                                             borderSide: const BorderSide(
                                                 color: Colors.grey, width: 0.0),
                                           ),
-                                          disabledBorder: OutlineInputBorder(
-                                            borderSide: const BorderSide(
-                                                color: Colors.grey, width: 0.0),
-                                          ),
                                         )),
-                                  ],
-                                )),
-                                SizedBox(
-                                  width: 10.0,
-                                ),
-                                Flexible(
-                                    child: Column(
-                                  children: [
-                                    Text('Kg. Vendidos : '),
-                                    SizedBox(
-                                      height: 10.0,
-                                    ),
-                                    TextField(
-                                        enabled: false,
-                                        controller: kilosVendidos,
-                                        textAlign: TextAlign.center,
-                                        maxLines: 1,
-                                        decoration: new InputDecoration(
-                                          contentPadding: EdgeInsets.all(5.0),
-                                          isDense: true,
-                                          enabledBorder:
-                                              const OutlineInputBorder(
-                                            borderSide: const BorderSide(
-                                                color: Colors.grey, width: 0.0),
-                                          ),
-                                          focusedBorder: OutlineInputBorder(
-                                            borderSide: const BorderSide(
-                                                color: Colors.grey, width: 0.0),
-                                          ),
-                                          disabledBorder: OutlineInputBorder(
-                                            borderSide: const BorderSide(
-                                                color: Colors.grey, width: 0.0),
-                                          ),
-                                        )),
-                                  ],
-                                )),
-                              ],
-                            ),
-                            SizedBox(
-                              height: 30.0,
-                            ),
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Flexible(
-                                    child: Column(
-                                  children: [
-                                    Text('N° Jabas : '),
-                                    SizedBox(
-                                      height: 10.0,
-                                    ),
-                                    TextField(
-                                      controller: numeroJabas,
-                                      textAlign: TextAlign.center,
-                                      keyboardType: TextInputType.phone,
-                                      maxLines: 1,
-                                      decoration: new InputDecoration(
-                                        contentPadding: EdgeInsets.all(5.0),
-                                        isDense: true,
-                                        enabledBorder: const OutlineInputBorder(
-                                          borderSide: const BorderSide(
-                                              color: Colors.grey, width: 0.0),
-                                        ),
-                                        focusedBorder: OutlineInputBorder(
-                                          borderSide: const BorderSide(
-                                              color: Colors.grey, width: 0.0),
-                                        ),
-                                      ),
-                                      onChanged: (texto) {
-                                        setState(() {
-                                          //obtengo el numero de pollod
-                                          var pollitos =
-                                              int.parse(numeroJabas.text) *
-                                                  int.parse(unidadesJaba.text);
-                                          cantPollos.text = pollitos.toString();
-                                          print(
-                                              'cantidad de pollos ${pollitos}');
-                                          //obtenemos los kilos totales
-                                          var kilitos = pollitos *
-                                              double.parse(
-                                                  factorConversion.text);
-                                          print(
-                                              'cantidad de pollos ${kilitos}');
-                                          kilosVendidos.text = kilitos
-                                              .toStringAsFixed(2)
-                                              .toString();
-                                          print(
-                                              'cantidad de pollos ${kilosVendidos.text}');
-                                          var totalcito =
-                                              double.parse(precioUnit.text) *
-                                                  kilitos;
-                                          print(
-                                              'cantidad de pollos ${totalcito}');
-                                          total.text =
-                                              totalcito.toStringAsFixed(2);
-                                        });
-                                      },
-                                    ),
-                                  ],
-                                )),
-                                SizedBox(
-                                  width: 10.0,
-                                ),
-                                Flexible(
-                                    child: Column(
-                                  children: [
-                                    Text('Und. x Jab. : '),
-                                    SizedBox(
-                                      height: 10.0,
-                                    ),
-                                    TextField(
-                                      controller: unidadesJaba,
-                                      textAlign: TextAlign.center,
-                                      keyboardType: TextInputType.phone,
-                                      maxLines: 1,
-                                      decoration: new InputDecoration(
-                                        contentPadding: EdgeInsets.all(5.0),
-                                        isDense: true,
-                                        enabledBorder: const OutlineInputBorder(
-                                          borderSide: const BorderSide(
-                                              color: Colors.grey, width: 0.0),
-                                        ),
-                                        focusedBorder: OutlineInputBorder(
-                                          borderSide: const BorderSide(
-                                              color: Colors.grey, width: 0.0),
-                                        ),
-                                      ),
-                                      onChanged: (texto) {
-                                        setState(() {
-                                          //obtengo el numero de pollod
-                                          var pollitos =
-                                              int.parse(numeroJabas.text) *
-                                                  int.parse(unidadesJaba.text);
-                                          cantPollos.text = pollitos.toString();
-                                          //obtenemos los kilos totales
-                                          var kilitos = pollitos *
-                                              double.parse(
-                                                  factorConversion.text);
-                                          kilosVendidos.text = kilitos
-                                              .toStringAsFixed(2)
-                                              .toString();
-                                          var totalcito =
-                                              double.parse(precioUnit.text) *
-                                                  kilitos;
-                                          total.text =
-                                              totalcito.toStringAsFixed(2);
-                                        });
-                                      },
-                                    ),
-                                  ],
-                                )),
-                                SizedBox(
-                                  width: 10.0,
-                                ),
-                                Flexible(
-                                    child: Column(
-                                  children: [
-                                    Text('Pollos : '),
-                                    SizedBox(
-                                      height: 10.0,
-                                    ),
-                                    TextField(
-                                        enabled: false,
-                                        controller: cantPollos,
-                                        textAlign: TextAlign.center,
-                                        maxLines: 1,
-                                        decoration: new InputDecoration(
-                                          contentPadding: EdgeInsets.all(5.0),
-                                          isDense: true,
-                                          enabledBorder:
-                                              const OutlineInputBorder(
-                                            borderSide: const BorderSide(
-                                                color: Colors.grey, width: 0.0),
-                                          ),
-                                          focusedBorder: OutlineInputBorder(
-                                            borderSide: const BorderSide(
-                                                color: Colors.grey, width: 0.0),
-                                          ),
-                                          disabledBorder: OutlineInputBorder(
-                                            borderSide: const BorderSide(
-                                                color: Colors.grey, width: 0.0),
-                                          ),
-                                        )),
-                                  ],
-                                )),
-                              ],
-                            ),
-                            SizedBox(
-                              height: 30.0,
-                            ),
-                            Row(
-                              children: [
-                                Text(
-                                  'Total S/. ',
-                                  style: TextStyle(
-                                      fontSize: 25.0,
-                                      fontWeight: FontWeight.w800),
-                                ),
-                                Flexible(
-                                  child: TextField(
-                                      keyboardType: TextInputType.phone,
-                                      controller: total,
-                                      textAlign: TextAlign.center,
-                                      maxLines: 1,
-                                      decoration: new InputDecoration(
-                                        contentPadding: EdgeInsets.all(5.0),
-                                        isDense: true,
-                                        enabledBorder: const OutlineInputBorder(
-                                          borderSide: const BorderSide(
-                                              color: Colors.grey, width: 0.0),
-                                        ),
-                                        focusedBorder: OutlineInputBorder(
-                                          borderSide: const BorderSide(
-                                              color: Colors.grey, width: 0.0),
-                                        ),
-                                      )),
-                                ),
-                              ],
-                            ),
-                            SizedBox(
-                              height: 30.0,
-                            ),
-                            Container(
-                              height: 40.0,
-                              width: double.infinity,
-                              child: MaterialButton(
-                                  color: Color.fromRGBO(97, 0, 236, 1),
-                                  child: Text(
-                                    'Ok',
-                                    style: TextStyle(color: Colors.white),
                                   ),
-                                  onPressed: () {
-                                    //print(element.runtimeType);
-                                    /*String auxNumJabas =
+                                ],
+                              ),
+                              SizedBox(
+                                height: 30.0,
+                              ),
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Flexible(
+                                      child: Column(
+                                    children: [
+                                      Text('Precio Unit(Kg) : '),
+                                      SizedBox(
+                                        height: 10.0,
+                                      ),
+                                      TextField(
+                                          enabled: false,
+                                          controller: precioUnit,
+                                          textAlign: TextAlign.center,
+                                          maxLines: 1,
+                                          decoration: new InputDecoration(
+                                            contentPadding: EdgeInsets.all(5.0),
+                                            isDense: true,
+                                            enabledBorder:
+                                                const OutlineInputBorder(
+                                              borderSide: const BorderSide(
+                                                  color: Colors.grey,
+                                                  width: 0.0),
+                                            ),
+                                            focusedBorder: OutlineInputBorder(
+                                              borderSide: const BorderSide(
+                                                  color: Colors.grey,
+                                                  width: 0.0),
+                                            ),
+                                            disabledBorder: OutlineInputBorder(
+                                              borderSide: const BorderSide(
+                                                  color: Colors.grey,
+                                                  width: 0.0),
+                                            ),
+                                          )),
+                                    ],
+                                  )),
+                                  SizedBox(
+                                    width: 10.0,
+                                  ),
+                                  Flexible(
+                                      child: Column(
+                                    children: [
+                                      Text('Kg. Vendidos : '),
+                                      SizedBox(
+                                        height: 10.0,
+                                      ),
+                                      TextField(
+                                          enabled: false,
+                                          controller: kilosVendidos,
+                                          textAlign: TextAlign.center,
+                                          maxLines: 1,
+                                          decoration: new InputDecoration(
+                                            contentPadding: EdgeInsets.all(5.0),
+                                            isDense: true,
+                                            enabledBorder:
+                                                const OutlineInputBorder(
+                                              borderSide: const BorderSide(
+                                                  color: Colors.grey,
+                                                  width: 0.0),
+                                            ),
+                                            focusedBorder: OutlineInputBorder(
+                                              borderSide: const BorderSide(
+                                                  color: Colors.grey,
+                                                  width: 0.0),
+                                            ),
+                                            disabledBorder: OutlineInputBorder(
+                                              borderSide: const BorderSide(
+                                                  color: Colors.grey,
+                                                  width: 0.0),
+                                            ),
+                                          )),
+                                    ],
+                                  )),
+                                ],
+                              ),
+                              SizedBox(
+                                height: 30.0,
+                              ),
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Flexible(
+                                      child: Column(
+                                    children: [
+                                      Text('N° Jabas : '),
+                                      SizedBox(
+                                        height: 10.0,
+                                      ),
+                                      TextField(
+                                        controller: numeroJabas,
+                                        textAlign: TextAlign.center,
+                                        keyboardType: TextInputType.phone,
+                                        maxLines: 1,
+                                        decoration: new InputDecoration(
+                                          contentPadding: EdgeInsets.all(5.0),
+                                          isDense: true,
+                                          enabledBorder:
+                                              const OutlineInputBorder(
+                                            borderSide: const BorderSide(
+                                                color: Colors.grey, width: 0.0),
+                                          ),
+                                          focusedBorder: OutlineInputBorder(
+                                            borderSide: const BorderSide(
+                                                color: Colors.grey, width: 0.0),
+                                          ),
+                                        ),
+                                        onChanged: (texto) {
+                                          setState(() {
+                                            //obtengo el numero de pollod
+                                            var pollitos = int.parse(
+                                                    numeroJabas.text) *
+                                                int.parse(unidadesJaba.text);
+                                            cantPollos.text =
+                                                pollitos.toString();
+                                            print(
+                                                'cantidad de pollos ${pollitos}');
+                                            //obtenemos los kilos totales
+                                            var kilitos = pollitos *
+                                                double.parse(
+                                                    factorConversion.text);
+                                            print(
+                                                'cantidad de pollos ${kilitos}');
+                                            kilosVendidos.text = kilitos
+                                                .toStringAsFixed(2)
+                                                .toString();
+                                            print(
+                                                'cantidad de pollos ${kilosVendidos.text}');
+                                            var totalcito =
+                                                double.parse(precioUnit.text) *
+                                                    kilitos;
+                                            print(
+                                                'cantidad de pollos ${totalcito}');
+                                            total.text =
+                                                totalcito.toStringAsFixed(2);
+                                          });
+                                        },
+                                      ),
+                                    ],
+                                  )),
+                                  SizedBox(
+                                    width: 10.0,
+                                  ),
+                                  Flexible(
+                                      child: Column(
+                                    children: [
+                                      Text('Und. x Jab. : '),
+                                      SizedBox(
+                                        height: 10.0,
+                                      ),
+                                      TextField(
+                                        controller: unidadesJaba,
+                                        textAlign: TextAlign.center,
+                                        keyboardType: TextInputType.phone,
+                                        maxLines: 1,
+                                        decoration: new InputDecoration(
+                                          contentPadding: EdgeInsets.all(5.0),
+                                          isDense: true,
+                                          enabledBorder:
+                                              const OutlineInputBorder(
+                                            borderSide: const BorderSide(
+                                                color: Colors.grey, width: 0.0),
+                                          ),
+                                          focusedBorder: OutlineInputBorder(
+                                            borderSide: const BorderSide(
+                                                color: Colors.grey, width: 0.0),
+                                          ),
+                                        ),
+                                        onChanged: (texto) {
+                                          setState(() {
+                                            //obtengo el numero de pollod
+                                            var pollitos = int.parse(
+                                                    numeroJabas.text) *
+                                                int.parse(unidadesJaba.text);
+                                            cantPollos.text =
+                                                pollitos.toString();
+                                            //obtenemos los kilos totales
+                                            var kilitos = pollitos *
+                                                double.parse(
+                                                    factorConversion.text);
+                                            kilosVendidos.text = kilitos
+                                                .toStringAsFixed(2)
+                                                .toString();
+                                            var totalcito =
+                                                double.parse(precioUnit.text) *
+                                                    kilitos;
+                                            total.text =
+                                                totalcito.toStringAsFixed(2);
+                                          });
+                                        },
+                                      ),
+                                    ],
+                                  )),
+                                  SizedBox(
+                                    width: 10.0,
+                                  ),
+                                  Flexible(
+                                      child: Column(
+                                    children: [
+                                      Text('Pollos : '),
+                                      SizedBox(
+                                        height: 10.0,
+                                      ),
+                                      TextField(
+                                          enabled: false,
+                                          controller: cantPollos,
+                                          textAlign: TextAlign.center,
+                                          maxLines: 1,
+                                          decoration: new InputDecoration(
+                                            contentPadding: EdgeInsets.all(5.0),
+                                            isDense: true,
+                                            enabledBorder:
+                                                const OutlineInputBorder(
+                                              borderSide: const BorderSide(
+                                                  color: Colors.grey,
+                                                  width: 0.0),
+                                            ),
+                                            focusedBorder: OutlineInputBorder(
+                                              borderSide: const BorderSide(
+                                                  color: Colors.grey,
+                                                  width: 0.0),
+                                            ),
+                                            disabledBorder: OutlineInputBorder(
+                                              borderSide: const BorderSide(
+                                                  color: Colors.grey,
+                                                  width: 0.0),
+                                            ),
+                                          )),
+                                    ],
+                                  )),
+                                ],
+                              ),
+                              SizedBox(
+                                height: 30.0,
+                              ),
+                              Row(
+                                children: [
+                                  Text(
+                                    'Total S/. ',
+                                    style: TextStyle(
+                                        fontSize: 25.0,
+                                        fontWeight: FontWeight.w800),
+                                  ),
+                                  Flexible(
+                                    child: TextField(
+                                        keyboardType: TextInputType.phone,
+                                        controller: total,
+                                        textAlign: TextAlign.center,
+                                        maxLines: 1,
+                                        decoration: new InputDecoration(
+                                          contentPadding: EdgeInsets.all(5.0),
+                                          isDense: true,
+                                          enabledBorder:
+                                              const OutlineInputBorder(
+                                            borderSide: const BorderSide(
+                                                color: Colors.grey, width: 0.0),
+                                          ),
+                                          focusedBorder: OutlineInputBorder(
+                                            borderSide: const BorderSide(
+                                                color: Colors.grey, width: 0.0),
+                                          ),
+                                        )),
+                                  ),
+                                ],
+                              ),
+                              SizedBox(
+                                height: 30.0,
+                              ),
+                              Container(
+                                height: 40.0,
+                                width: double.infinity,
+                                child: MaterialButton(
+                                    color: Color.fromRGBO(97, 0, 236, 1),
+                                    child: Text(
+                                      'Ok',
+                                      style: TextStyle(color: Colors.white),
+                                    ),
+                                    onPressed: () {
+                                      //print(element.runtimeType);
+                                      /*String auxNumJabas =
                                         numeroJabas.text.toString();*/
-                                    setState(() {
-                                      Cart.agregarProducto(
-                                          element['codigo'].toString(),
-                                          element['codigoOEBS'].toString(),
-                                          element['nombreProducto'].toString(),
-                                          kilosVendidos.text,
-                                          cantPollos.text,
-                                          unidadesJaba
-                                              .text, //element['pollosxjaba'].toString(),
-                                          numeroJabas.text, //numeroJabas.text,
-                                          element['factorConversion']
-                                              .toString(),
-                                          valorInicial.toString(),
-                                          factorConversion.text,
-                                          valorFinal.toString(),
-                                          total.text,
-                                          atributo2,
-                                          '',
-                                          '',
-                                          '',
-                                          (valorInicial *
-                                                  double.parse(
-                                                      kilosVendidos.text))
-                                              .toStringAsFixed(2),
-                                          (double.parse(total.text) -
-                                                  (valorInicial *
-                                                      double.parse(
-                                                          kilosVendidos.text)))
-                                              .toStringAsFixed(2));
-                                      print('se añadio al carrito');
-                                    });
-                                    Navigator.pop(context);
-                                  }),
-                            ),
-                          ],
-                        ),
-                      ));
-                });
+                                      setState(() {
+                                        Cart.agregarProducto(
+                                            element['codigo'].toString(),
+                                            element['codigoOEBS'].toString(),
+                                            element['nombreProducto']
+                                                .toString(),
+                                            kilosVendidos.text,
+                                            cantPollos.text,
+                                            unidadesJaba
+                                                .text, //element['pollosxjaba'].toString(),
+                                            numeroJabas
+                                                .text, //numeroJabas.text,
+                                            element['factorConversion']
+                                                .toString(),
+                                            valorInicial.toString(),
+                                            factorConversion.text,
+                                            valorFinal.toString(),
+                                            total.text,
+                                            atributo2,
+                                            '',
+                                            '',
+                                            '',
+                                            (valorInicial *
+                                                    double.parse(
+                                                        kilosVendidos.text))
+                                                .toStringAsFixed(2),
+                                            (double.parse(total.text) -
+                                                    (valorInicial *
+                                                        double.parse(
+                                                            kilosVendidos
+                                                                .text)))
+                                                .toStringAsFixed(2));
+                                        print('se añadio al carrito');
+                                      });
+                                      Navigator.pop(context);
+                                    }),
+                              ),
+                            ],
+                          ),
+                        ));
+                  });
+            }
           },
           child: _bodyCard(element),
         ),

@@ -1,4 +1,5 @@
 import 'package:elrocio/src/pages/detalle_pago.dart';
+import 'package:elrocio/src/pages/nuevo_pago.dart';
 import 'package:flutter/material.dart';
 
 class ReciboCobranza extends StatefulWidget {
@@ -32,6 +33,11 @@ class _ReciboCobranzaState extends State<ReciboCobranza> {
             ),*/
             GestureDetector(
               child: Icon(Icons.save),
+              onTap: () {
+                var ruta =
+                    MaterialPageRoute(builder: (context) => DetallePago());
+                Navigator.push(context, ruta);
+              },
             ),
             SizedBox(
               width: 20.0,
@@ -57,22 +63,6 @@ class _ReciboCobranzaState extends State<ReciboCobranza> {
           _monto(),
           _division(),
           _btnAgregar()
-          /*Container(
-            height: 60.0,
-            child: MaterialButton(
-              color: Color.fromRGBO(97, 0, 236, 1),
-              onPressed: () {
-                var ruta =
-                    MaterialPageRoute(builder: (context) => DetallePago());
-                Navigator.push(context, ruta);
-              },
-              child: Icon(
-                Icons.add_circle_outlined,
-                size: 40.0,
-                color: Colors.white,
-              ),
-            ),
-          )*/
         ],
       ),
     );
@@ -100,14 +90,14 @@ class _ReciboCobranzaState extends State<ReciboCobranza> {
 
   Widget _fecha() {
     return Text(
-      'Nro Recibo : ${widget.fecha}',
+      'Fecha : ${widget.fecha}',
       style: TextStyle(fontSize: 25.0),
     );
   }
 
   Widget _monto() {
     return Text(
-      'Nro Recibo : S/ 0.00',
+      'Monto : S/ 0.00',
       style: TextStyle(fontSize: 25.0),
     );
   }
@@ -118,7 +108,8 @@ class _ReciboCobranzaState extends State<ReciboCobranza> {
       child: MaterialButton(
         color: Color.fromRGBO(97, 0, 236, 1),
         onPressed: () {
-          var ruta = MaterialPageRoute(builder: (context) => DetallePago());
+          var ruta = MaterialPageRoute(
+              builder: (context) => NuevoPago(widget.PKCliente));
           Navigator.push(context, ruta);
         },
         child: Icon(

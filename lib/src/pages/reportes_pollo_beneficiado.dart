@@ -36,15 +36,6 @@ class _ReportesPolloBeneficiadoState extends State<ReportesPolloBeneficiado> {
         'Content-Type': 'application/json; charset=UTF-8',
       },
       body: jsonEncode(<String, String>{
-        /*"idSalesperson": "0",
-        "idUsuario": "0",
-        "login": postUsuario.toString(),
-        "password": postPassword.toString(),
-        "nombres": "",
-        "compania": "",
-        "clase": "",
-        "resultado": "",
-        "idResultado": "0"*/
         "codigo": pref.getString('codigo').toString(),
         "compania": pref.getString('compania').toString(),
         "fechaCaja": _fechaEnvio,
