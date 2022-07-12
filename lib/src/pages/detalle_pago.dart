@@ -4,7 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class DetallePago extends StatefulWidget {
-  DetallePago({Key? key}) : super(key: key);
+  int PKCliente;
+  String numeroVoucher;
+  String numeroAgente;
+  String monto;
+  DetallePago(this.PKCliente, this.numeroVoucher, this.numeroAgente, this.monto,
+      {Key? key})
+      : super(key: key);
 
   @override
   State<DetallePago> createState() => _DetallePagoState();
@@ -32,6 +38,9 @@ class _DetallePagoState extends State<DetallePago> {
   void setearDatos() {
     _textEditingController.text =
         DateFormat('dd/MM/yyyy').format(_selectedDate);
+    _numOperacion.text = widget.numeroVoucher;
+    _numAgente.text = widget.numeroAgente;
+    _monto.text = widget.monto;
   }
 
   Future<List<dynamic>> getMetodos() async {
@@ -185,7 +194,7 @@ class _DetallePagoState extends State<DetallePago> {
         ),
         Expanded(
           child: TextField(
-              //enabled: false,
+              enabled: false,
               controller: _numOperacion,
               keyboardType: tipoText,
               textAlign: TextAlign.center,

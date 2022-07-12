@@ -34,9 +34,9 @@ class _ReciboCobranzaState extends State<ReciboCobranza> {
             GestureDetector(
               child: Icon(Icons.save),
               onTap: () {
-                var ruta =
-                    MaterialPageRoute(builder: (context) => DetallePago());
-                Navigator.push(context, ruta);
+                /*var ruta =
+                    MaterialPageRoute(builder: (context) => DetallePago(widget.PKCliente, widget.));
+                Navigator.push(context, ruta);*/
               },
             ),
             SizedBox(

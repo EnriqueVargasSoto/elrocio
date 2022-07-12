@@ -2,8 +2,14 @@ import 'package:elrocio/src/pages/detalle_pago.dart';
 import 'package:flutter/material.dart';
 
 class DocumentosPorCobrar extends StatefulWidget {
+  int PKCliente;
   String numeroVoucher;
-  DocumentosPorCobrar(this.numeroVoucher, {Key? key}) : super(key: key);
+  String numeroAgente;
+  String monto;
+  DocumentosPorCobrar(
+      this.PKCliente, this.numeroVoucher, this.numeroAgente, this.monto,
+      {Key? key})
+      : super(key: key);
 
   @override
   State<DocumentosPorCobrar> createState() => _DocumentosPorCobrarState();
@@ -25,8 +31,12 @@ class _DocumentosPorCobrarState extends State<DocumentosPorCobrar> {
                 size: 30.0,
               ),
               onTap: () {
-                var ruta =
-                    MaterialPageRoute(builder: (context) => DetallePago());
+                var ruta = MaterialPageRoute(
+                    builder: (context) => DetallePago(
+                        widget.PKCliente,
+                        widget.numeroVoucher,
+                        widget.numeroAgente,
+                        widget.monto));
                 Navigator.push(context, ruta);
               },
             ),
@@ -51,7 +61,7 @@ class _DocumentosPorCobrarState extends State<DocumentosPorCobrar> {
                 height: 5.0,
               ),
               Text(
-                'Total S/ 2,500.00',
+                'Total S/ ${widget.monto}',
                 style: TextStyle(
                     color: Colors.black,
                     fontWeight: FontWeight.w400,
@@ -61,7 +71,7 @@ class _DocumentosPorCobrarState extends State<DocumentosPorCobrar> {
                 height: 5.0,
               ),
               Text(
-                'Disponible S/ 2,500.00',
+                'Disponible S/ ${widget.monto}',
                 style: TextStyle(
                     color: Colors.black,
                     fontWeight: FontWeight.w400,

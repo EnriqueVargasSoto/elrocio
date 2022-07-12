@@ -5,7 +5,8 @@ import 'package:flutter/material.dart';
 class AgregarDocumento extends StatefulWidget {
   int PKCliente;
   String numeroVoucher;
-  AgregarDocumento(this.PKCliente, this.numeroVoucher, {Key? key})
+  String monto;
+  AgregarDocumento(this.PKCliente, this.numeroVoucher, this.monto, {Key? key})
       : super(key: key);
 
   @override
@@ -16,11 +17,23 @@ class _AgregarDocumentoState extends State<AgregarDocumento> {
   Color _colorBtn = Color.fromRGBO(97, 0, 236, 1);
   Color _textBtn = Colors.white;
   double _fontSize = 18.0;
+  double _disponible = 0.0;
+
+  TextEditingController _montoTotal = TextEditingController();
+  TextEditingController _saldoPagar = TextEditingController();
+
+  List<bool> _isChecked = [];
+  late bool valorcitoAux;
 
   Future<List<dynamic>> getDocumentos(idCliente) async {
     List<dynamic> arrDocumentos = await SQLHelper.getDocumentos(idCliente);
-    print(arrDocumentos);
     return arrDocumentos;
+  }
+
+  Future<String> getDisponible() async {
+    String _dispo = widget.monto;
+    _disponible = double.parse(_dispo);
+    return _dispo;
   }
 
   @override
@@ -38,9 +51,9 @@ class _AgregarDocumentoState extends State<AgregarDocumento> {
                 size: 30.0,
               ),
               onTap: () {
-                var ruta =
+                /*var ruta =
                     MaterialPageRoute(builder: (context) => DetallePago());
-                Navigator.push(context, ruta);
+                Navigator.push(context, ruta);*/
               },
             ),
             SizedBox(
@@ -64,7 +77,7 @@ class _AgregarDocumentoState extends State<AgregarDocumento> {
                 height: 5.0,
               ),
               Text(
-                'Total S/ 2,500.00',
+                'Total S/ ${widget.monto}',
                 style: TextStyle(
                     color: Colors.black,
                     fontWeight: FontWeight.w400,
@@ -73,13 +86,7 @@ class _AgregarDocumentoState extends State<AgregarDocumento> {
               SizedBox(
                 height: 5.0,
               ),
-              Text(
-                'Disponible S/ 2,500.00',
-                style: TextStyle(
-                    color: Colors.black,
-                    fontWeight: FontWeight.w400,
-                    fontSize: 18.0),
-              ),
+              _textDisponible(),
               SizedBox(
                 height: 5.0,
               ),
@@ -105,8 +112,17 @@ class _AgregarDocumentoState extends State<AgregarDocumento> {
 
   List<Widget> _listaDocumento(List<dynamic> data, BuildContext context) {
     final List<Widget> documentos = [];
+    int indice = 0;
+    _isChecked = List<bool>.filled(data.length, false);
 
-    data.forEach((element) {
+    for (var i = 0; i < data.length; i++) {
+      double pagadoDecimal =
+          data[i]['montoMonedaOrg'] - data[i]['saldoMonedaOrg'];
+      String pagado = pagadoDecimal.toStringAsFixed(2);
+      _montoTotal.text = data[i]['montoMonedaOrg'].toString();
+
+      valorcitoAux = _isChecked[i];
+
       final widgetTemporal = Container(
         padding: EdgeInsets.only(left: 6.0, right: 10.0, top: 6.0, bottom: 6.0),
         decoration: BoxDecoration(
@@ -121,11 +137,264 @@ class _AgregarDocumentoState extends State<AgregarDocumento> {
             Transform.scale(
               scale: 1.7,
               child: Checkbox(
-                  value: false,
-                  checkColor: Colors.red,
-                  activeColor: Colors.amberAccent,
+                  value: valorcitoAux, //_isChecked[i],
+                  activeColor: Color.fromRGBO(97, 0, 236, 1),
                   side: BorderSide(width: 1.0, color: Colors.grey),
-                  onChanged: (onChanged) {}),
+                  onChanged: (val) {
+                    setState(() {
+                      this.valorcitoAux = val!;
+
+                      print(_isChecked);
+                    });
+                    //_listar(widget.PKCliente);
+                  }),
+            ),
+            SizedBox(
+              width: 5.0,
+            ),
+            Expanded(
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        data[i]['numDocumento'],
+                        style: TextStyle(
+                            color: Color.fromRGBO(78, 77, 111, 1),
+                            fontWeight: FontWeight.w400,
+                            fontSize: 17.0),
+                      ),
+                      SizedBox(
+                        width: 10.0,
+                      ),
+                      Text(
+                        data[i]['fechaVencimiento'],
+                        style: TextStyle(
+                            color: Color.fromRGBO(78, 77, 111, 1),
+                            fontWeight: FontWeight.w400,
+                            fontSize: 17.0),
+                      )
+                    ],
+                  ),
+                  SizedBox(
+                    height: 5.0,
+                  ),
+                  Row(
+                    children: [
+                      Text(
+                        data[i]['monedaVenta'],
+                        style: TextStyle(
+                            color: Colors.black,
+                            fontWeight: FontWeight.w400,
+                            fontSize: 16.0),
+                      ),
+                      SizedBox(
+                        width: 5.0,
+                      ),
+                      Text(
+                        'Total : S/ ${data[i]['montoMonedaOrg']}',
+                        style: TextStyle(
+                            color: Colors.black,
+                            fontWeight: FontWeight.w400,
+                            fontSize: 16.0),
+                      )
+                    ],
+                  ),
+                  SizedBox(
+                    height: 5.0,
+                  ),
+                  Row(
+                    children: [
+                      Text(
+                        'Pag: S/ ${pagado}',
+                        style: TextStyle(
+                            color: Colors.green[600],
+                            fontWeight: FontWeight.w400,
+                            fontSize: 15.0),
+                      ),
+                      SizedBox(
+                        width: 5.0,
+                      ),
+                      Text(
+                        'Pend: S/ ${data[i]['saldoMonedaOrg']}',
+                        style: TextStyle(
+                            color: Colors.red,
+                            fontWeight: FontWeight.w400,
+                            fontSize: 15.0),
+                      )
+                    ],
+                  )
+                ],
+              ),
+            ),
+            SizedBox(
+              width: 5.0,
+            ),
+            GestureDetector(
+              child: Container(
+                height: 50.0,
+                width: 50.0,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                    color: Color.fromRGBO(128, 194, 251, 1),
+                    borderRadius: BorderRadius.circular(15),
+                    border: Border.all(
+                        color: Color.fromRGBO(67, 143, 207, 1), width: 1.0)),
+                child: Icon(
+                  Icons.edit,
+                  color: Colors.white,
+                ),
+              ),
+              onTap: () {
+                showDialog(
+                    context: context,
+                    builder: (context) {
+                      return AlertDialog(
+                        scrollable: true,
+                        title: Center(
+                          child: Text('Documento Pendiente'),
+                        ),
+                        content: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Center(
+                              child: Text(
+                                data[i]['numDocumento'],
+                                style: TextStyle(
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 18.0),
+                              ),
+                            ),
+                            SizedBox(
+                              height: 20.0,
+                            ),
+                            Text('Monto Total S/.'),
+                            SizedBox(
+                              height: 5,
+                            ),
+                            TextField(
+                                enabled: false,
+                                keyboardType: TextInputType.phone,
+                                controller: _montoTotal,
+                                textAlign: TextAlign.center,
+                                maxLines: 1,
+                                decoration: new InputDecoration(
+                                  contentPadding: EdgeInsets.all(5.0),
+                                  isDense: true,
+                                  enabledBorder: const OutlineInputBorder(
+                                    borderSide: const BorderSide(
+                                        color: Colors.grey, width: 0.0),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderSide: const BorderSide(
+                                        color: Colors.grey, width: 0.0),
+                                  ),
+                                  disabledBorder: const OutlineInputBorder(
+                                    borderSide: const BorderSide(
+                                        color: Colors.grey, width: 0.0),
+                                  ),
+                                )),
+                            SizedBox(
+                              height: 20.0,
+                            ),
+                            Text('Monto Pagar S/.'),
+                            SizedBox(
+                              height: 5,
+                            ),
+                            TextField(
+                                keyboardType: TextInputType.phone,
+                                controller: _saldoPagar,
+                                textAlign: TextAlign.center,
+                                maxLines: 1,
+                                decoration: new InputDecoration(
+                                  contentPadding: EdgeInsets.all(5.0),
+                                  isDense: true,
+                                  enabledBorder: const OutlineInputBorder(
+                                    borderSide: const BorderSide(
+                                        color: Colors.grey, width: 0.0),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderSide: const BorderSide(
+                                        color: Colors.grey, width: 0.0),
+                                  ),
+                                )),
+                            SizedBox(
+                              height: 20.0,
+                            ),
+                            Row(
+                              children: [
+                                Expanded(
+                                    child: MaterialButton(
+                                        color: _colorBtn,
+                                        shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(5.0)),
+                                        child: Text(
+                                          'Aceptar',
+                                          style: TextStyle(color: _textBtn),
+                                        ),
+                                        onPressed: () async {})),
+                                SizedBox(
+                                  width: 10.0,
+                                ),
+                                Expanded(
+                                    child: MaterialButton(
+                                        //color: Colors.red[200],
+                                        shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(5.0),
+                                            side: BorderSide(
+                                                color: _colorBtn, width: 2.0)),
+                                        child: Text(
+                                          'Cancelar',
+                                          style: TextStyle(color: _colorBtn),
+                                        ),
+                                        onPressed: () {
+                                          Navigator.pop(context);
+                                        }))
+                              ],
+                            )
+                          ],
+                        ),
+                      );
+                    });
+              },
+            )
+          ],
+        ),
+      );
+    }
+
+    data.forEach((element) {
+      double pagadoDecimal =
+          element['montoMonedaOrg'] - element['saldoMonedaOrg'];
+      String pagado = pagadoDecimal.toStringAsFixed(2);
+      _montoTotal.text = element['montoMonedaOrg'].toString();
+      final widgetTemporal = Container(
+        padding: EdgeInsets.only(left: 6.0, right: 10.0, top: 6.0, bottom: 6.0),
+        decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(5),
+            border: Border.all(color: Colors.grey, width: 1.0),
+            gradient: RadialGradient(colors: [
+              Colors.white,
+              Color.fromRGBO(128, 194, 251, 0.2),
+            ], radius: 4.0, center: Alignment.center)),
+        child: Row(
+          children: [
+            Transform.scale(
+              scale: 1.7,
+              child: Checkbox(
+                  value: _isChecked[indice],
+                  activeColor: Color.fromRGBO(97, 0, 236, 1),
+                  side: BorderSide(width: 1.0, color: Colors.grey),
+                  onChanged: (val) {
+                    setState(() {
+                      _isChecked[indice] = val!;
+                      print(_isChecked);
+                    });
+                    //_listar(widget.PKCliente);
+                  }),
             ),
             SizedBox(
               width: 5.0,
@@ -170,7 +439,7 @@ class _AgregarDocumentoState extends State<AgregarDocumento> {
                         width: 5.0,
                       ),
                       Text(
-                        'Total : S/ 297.01',
+                        'Total : S/ ${element['montoMonedaOrg']}',
                         style: TextStyle(
                             color: Colors.black,
                             fontWeight: FontWeight.w400,
@@ -184,7 +453,7 @@ class _AgregarDocumentoState extends State<AgregarDocumento> {
                   Row(
                     children: [
                       Text(
-                        'Pag: S/ 0.00',
+                        'Pag: S/ ${pagado}',
                         style: TextStyle(
                             color: Colors.green[600],
                             fontWeight: FontWeight.w400,
@@ -194,7 +463,7 @@ class _AgregarDocumentoState extends State<AgregarDocumento> {
                         width: 5.0,
                       ),
                       Text(
-                        'Pend: S/ 297.01',
+                        'Pend: S/ ${element['saldoMonedaOrg']}',
                         style: TextStyle(
                             color: Colors.red,
                             fontWeight: FontWeight.w400,
@@ -252,8 +521,9 @@ class _AgregarDocumentoState extends State<AgregarDocumento> {
                               height: 5,
                             ),
                             TextField(
+                                enabled: false,
                                 keyboardType: TextInputType.phone,
-                                //controller: factorConversion,
+                                controller: _montoTotal,
                                 textAlign: TextAlign.center,
                                 maxLines: 1,
                                 decoration: new InputDecoration(
@@ -267,6 +537,10 @@ class _AgregarDocumentoState extends State<AgregarDocumento> {
                                     borderSide: const BorderSide(
                                         color: Colors.grey, width: 0.0),
                                   ),
+                                  disabledBorder: const OutlineInputBorder(
+                                    borderSide: const BorderSide(
+                                        color: Colors.grey, width: 0.0),
+                                  ),
                                 )),
                             SizedBox(
                               height: 20.0,
@@ -277,7 +551,7 @@ class _AgregarDocumentoState extends State<AgregarDocumento> {
                             ),
                             TextField(
                                 keyboardType: TextInputType.phone,
-                                //controller: factorConversion,
+                                controller: _saldoPagar,
                                 textAlign: TextAlign.center,
                                 maxLines: 1,
                                 decoration: new InputDecoration(
@@ -348,5 +622,19 @@ class _AgregarDocumentoState extends State<AgregarDocumento> {
     });
 
     return documentos;
+  }
+
+  Widget _textDisponible() {
+    return FutureBuilder(
+      future: getDisponible(),
+      initialData: '',
+      builder: (BuildContext context, AsyncSnapshot snapshot) {
+        return Text(
+          'Disponible S/ ${snapshot.data}',
+          style: TextStyle(
+              color: Colors.black, fontWeight: FontWeight.w400, fontSize: 18.0),
+        );
+      },
+    );
   }
 }

@@ -64,8 +64,8 @@ class _NuevoPagoState extends State<NuevoPago> {
               ),
               onTap: () {
                 var ruta = MaterialPageRoute(
-                    builder: (context) =>
-                        AgregarDocumento(widget.PKCliente, _numOperacion.text));
+                    builder: (context) => AgregarDocumento(
+                        widget.PKCliente, _numOperacion.text, _monto.text));
                 Navigator.push(context, ruta);
               },
             ),
@@ -79,8 +79,8 @@ class _NuevoPagoState extends State<NuevoPago> {
               ),
               onTap: () {
                 var ruta = MaterialPageRoute(
-                    builder: (context) =>
-                        DocumentosPorCobrar(_numOperacion.text));
+                    builder: (context) => DocumentosPorCobrar(widget.PKCliente,
+                        _numOperacion.text, _numAgente.text, _monto.text));
                 Navigator.push(context, ruta);
               },
             ),
@@ -420,11 +420,9 @@ class _NuevoPagoState extends State<NuevoPago> {
               setState(() {
                 nombreCuenta = arrAuxCuentas[0]['nombre'];
                 codigoCuenta = int.parse(arrAuxCuentas[0]['codigo']);
-                //codigoMetodo = int.parse(element['codigo']);
                 codigo = int.parse(element['codigo']);
                 _metodo.text = element['nombre'];
                 codigo = int.parse(element['codigo']);
-                //_listaCuentas(int.parse(element['codigo']));
                 Navigator.pop(context);
               });
             },
