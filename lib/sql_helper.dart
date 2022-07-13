@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:sqflite/sqflite.dart' as sql;
 
@@ -13,6 +15,26 @@ class SQLHelper {
       await db.rawQuery(script);
     }
     return 'migracion desde script ok';
+  }
+
+  static Future<List<Map<String, dynamic>>> leerScript(List scripts) async {
+    final db = await SQLHelper.db();
+    List<dynamic> zxc = [];
+    List consu = [
+      "DROP TABLE IF EXISTS TBL_CLIENTE;",
+      "CREATE TABLE IF NOT EXISTS TBL_CLIENTE(PKCliente numeric, doc_cliente VARCHAR(20), nombre VARCHAR(100), saldopendiente varchar(50));",
+      "INSERT INTO TBL_CLIENTE(PKCliente,doc_cliente,nombre,saldopendiente)  VALUES ('2072706','10179685863','GLADYS LUCANO VASQUEZ','-0.06');"
+    ];
+    scripts.forEach((element) async {
+      await db.execute(element);
+    });
+    /*await db.execute(consu).then((value) {}).catchError((onError) {
+      
+    });*/
+    //return db.execute(script);
+    return [];
+    //db.query("TBL_CLIENTE");
+    ;
   }
 
   static Future<List<Map<String, dynamic>>> busquedaNombre(

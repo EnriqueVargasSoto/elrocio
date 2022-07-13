@@ -78,7 +78,17 @@ class _SincronizacionPageState extends State<SincronizacionPage> {
       await SQLHelper.createTablesScript(
           'CREATE TABLE IF NOT EXISTS TBL_PEDIDO_DETALLE( id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL ,idPedido INTEGER, codigoArticulo VARCHAR(100), codigoOEBS VARCHAR(100), idTipoLinea VARCHAR(100), nombreArticulo VARCHAR(300), cantidadKGS VARCHAR(100), cantidadUND VARCHAR(100), cantidadUNDXJaba VARCHAR(100) NULL, cantidadJabas VARCHAR(100) NULL, factorConversion VARCHAR(100), precioUnitario VARCHAR(100), factorConversionV VARCHAR(100), precioUnitarioV VARCHAR(100), monto VARCHAR(100), comentario VARCHAR(100) null, rango_minimo VARCHAR(100) null, rango_maximo VARCHAR(100) null)');
 
-      await abcDef(bar).then((value1) async {
+      await ejecutaScript(bar).then((value2) {
+        Fluttertoast.showToast(
+          msg: 'Se sincronizó de manera correcta',
+          //toastLength: Toast.LENGTH_SHORT,
+          //gravity: ToastGravity.BOTTOM,
+          //timeInSecForIos: 1,
+          //backgroundColor: Colors.red,
+          /*textColor: Colors.yellow*/
+        );
+      });
+      /*await abcDef(bar).then((value1) async {
         await _cierreModal().then((value2) {
           print('aqui termino');
           Fluttertoast.showToast(
@@ -90,8 +100,14 @@ class _SincronizacionPageState extends State<SincronizacionPage> {
             /*textColor: Colors.yellow*/
           );
         });
-      });
+      });*/
     });
+  }
+
+  Future<String> ejecutaScript(script) async {
+    List<dynamic> asdf = await SQLHelper.leerScript(script);
+    print(asdf);
+    return 'ok';
   }
 
   Future<int> abcDef(bar) async {
@@ -176,8 +192,17 @@ class _SincronizacionPageState extends State<SincronizacionPage> {
     ).then((value) async {
       String respuestitaString = value.body.toString();
       var bar = respuestitaString.split(";");
-
-      await abcDef(bar).then((value1) async {
+      await ejecutaScript(bar).then((value2) {
+        Fluttertoast.showToast(
+          msg: 'Se sincronizó de manera correcta',
+          //toastLength: Toast.LENGTH_SHORT,
+          //gravity: ToastGravity.BOTTOM,
+          //timeInSecForIos: 1,
+          //backgroundColor: Colors.red,
+          /*textColor: Colors.yellow*/
+        );
+      });
+      /*await abcDef(bar).then((value1) async {
         await _cierreModal().then((value2) {
           print('aqui termino');
           Fluttertoast.showToast(
@@ -189,7 +214,7 @@ class _SincronizacionPageState extends State<SincronizacionPage> {
             /*textColor: Colors.yellow*/
           );
         });
-      });
+      });*/
     });
   }
 

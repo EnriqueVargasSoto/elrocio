@@ -174,6 +174,8 @@ class _LoginPageState extends State<LoginPage> {
 
         String urlSincroniza =
             "https://qas-avicolas.rocio.com.pe/rocio-comercial/handlers/SC_SincronizaDatosMovil.ashx?codVendedor=${respuesta['idOEBS']}";
+        /*String urlSincroniza =
+            "http://18.232.18.100/wscomercial/handlers/SC_SincronizaDatosMovil.ashx?codVendedor=${respuesta['idOEBS']}";*/
         await http.get(
           Uri.parse(urlSincroniza),
           headers: <String, String>{
@@ -181,7 +183,7 @@ class _LoginPageState extends State<LoginPage> {
           },
         ).then((value1) async {
           String respuestitaString = value1.body.toString();
-          var bar = respuestitaString.split(";");
+          List bar = respuestitaString.split(";");
 
           await SQLHelper.createTablesScript(
               'DROP TABLE IF EXISTS TBL_PEDIDO;');
@@ -192,9 +194,8 @@ class _LoginPageState extends State<LoginPage> {
           await SQLHelper.createTablesScript(
               'CREATE TABLE IF NOT EXISTS TBL_PEDIDO_DETALLE( id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL ,idPedido INTEGER, codigoArticulo VARCHAR(100), codigoOEBS VARCHAR(100), idTipoLinea VARCHAR(100), nombreArticulo VARCHAR(300), cantidadKGS VARCHAR(100), cantidadUND VARCHAR(100), cantidadUNDXJaba VARCHAR(100) NULL, cantidadJabas VARCHAR(100) NULL, factorConversion VARCHAR(100), precioUnitario VARCHAR(100), factorConversionV VARCHAR(100), precioUnitarioV VARCHAR(100), monto VARCHAR(100), comentario VARCHAR(100) null, rango_minimo VARCHAR(100) null, rango_maximo VARCHAR(100) null)');
 
-          await abcDef(bar).then((value2) async {
-            /*var ruta = MaterialPageRoute(builder: (context) => HomePage());
-            Navigator.of(_scaffoldKey.currentContext!).push(ruta);*/
+          await ejecutaScript(bar).then((value2) {
+            print(value2);
             Navigator.pop(context);
             showDialog(
                 context: context,
@@ -313,6 +314,12 @@ class _LoginPageState extends State<LoginPage> {
             });
       }
     });
+  }
+
+  Future<String> ejecutaScript(script) async {
+    List<dynamic> asdf = await SQLHelper.leerScript(script);
+    print(asdf);
+    return 'ok';
   }
 
   Future<int> abcDef(bar) async {
