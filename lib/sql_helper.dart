@@ -255,7 +255,9 @@ class SQLHelper {
   static Future<List<Map<String, dynamic>>> getDocumentos(int idCliente) async {
     final db = await SQLHelper.db();
     return db.query("TBL_DOCUMENTO_VENTA",
-        where: "idCliente = ?", whereArgs: [idCliente]);
+        where:
+            "idCliente = ? AND tipoDocumento='FACTURA/BOLETA' AND saldoMonedaOrg > 0.00",
+        whereArgs: [idCliente]);
   }
 
   //static Future<List<Map<String, dynamic>>> update

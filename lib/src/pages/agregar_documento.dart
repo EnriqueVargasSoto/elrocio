@@ -2,6 +2,9 @@ import 'package:elrocio/sql_helper.dart';
 import 'package:elrocio/src/pages/detalle_pago.dart';
 import 'package:flutter/material.dart';
 
+Color _colorFondito = Color.fromRGBO(228, 227, 240, 1);
+int _estado = 0;
+
 class AgregarDocumento extends StatefulWidget {
   int PKCliente;
   String numeroVoucher;
@@ -25,9 +28,40 @@ class _AgregarDocumentoState extends State<AgregarDocumento> {
   List<bool> _isChecked = [];
   late bool valorcitoAux;
 
+  RadialGradient auxColor = RadialGradient(colors: [
+    Colors.white,
+    Color.fromRGBO(128, 194, 251, 0.2),
+  ], radius: 4.0, center: Alignment.center);
+
+  //Color _coloFondo = Color.fromRGBO(228, 227, 240, 1);
+
   Future<List<dynamic>> getDocumentos(idCliente) async {
     List<dynamic> arrDocumentos = await SQLHelper.getDocumentos(idCliente);
-    return arrDocumentos;
+    List<dynamic> auxArr = [];
+    arrDocumentos.forEach((element) {
+      var arrAux = {
+        'estado': true,
+        'PKDocumento': element['PKDocumento'],
+        'idCliente': element['idCliente'],
+        'numDocumento': element['numDocumento'],
+        'tipoDocumento': element['tipoDocumento'],
+        'fechaDocumento': element['fechaDocumento'],
+        'fechaVencimiento': element['fechaVencimiento'],
+        'montoMonedaOrg': element['montoMonedaOrg'],
+        'montoMonedaFun': element['montoMonedaFun'],
+        'saldoMonedaOrg': element['saldoMonedaOrg'],
+        'saldoMonedaFun': element['saldoMonedaFun'],
+        'idTerritorio': element['idTerritorio'],
+        'nomTerritorio': element['nomTerritorio'],
+        'nomVendedor': element['nomVendedor'],
+        'monedaVenta': element['monedaVenta'],
+        'terminoPago': element['terminoPago'],
+        'estadoDocumento': element['estadoDocumento']
+      };
+
+      auxArr.add(arrAux);
+    });
+    return auxArr;
   }
 
   Future<String> getDisponible() async {
@@ -90,7 +124,7 @@ class _AgregarDocumentoState extends State<AgregarDocumento> {
               SizedBox(
                 height: 5.0,
               ),
-              Expanded(child: _listar(widget.PKCliente))
+              Expanded(child: _listita(widget.PKCliente))
             ],
           ),
         ),
@@ -98,7 +132,7 @@ class _AgregarDocumentoState extends State<AgregarDocumento> {
     );
   }
 
-  Widget _listar(idCliente) {
+  Widget _ultimoLista(idCliente) {
     return FutureBuilder(
       future: getDocumentos(idCliente),
       initialData: [],
@@ -110,261 +144,41 @@ class _AgregarDocumentoState extends State<AgregarDocumento> {
     );
   }
 
+  Widget _listita(idCliente) {
+    return FutureBuilder(
+      future: getDocumentos(idCliente),
+      initialData: [],
+      builder: (BuildContext context, AsyncSnapshot<List<dynamic>> snapshot) {
+        return ListView.builder(
+            itemCount: snapshot.data?.length,
+            itemBuilder: (BuildContext context, int index) {
+              return Container(
+                padding: EdgeInsets.only(
+                    left: 6.0, right: 10.0, top: 6.0, bottom: 6.0),
+                child: Row(
+                  children: [
+                    CheckboxListTile(
+                        controlAffinity: ListTileControlAffinity.leading,
+                        activeColor: Colors.pink[300],
+                        dense: true,
+                        value: false, //snapshot.data![index]['estado'],
+                        title: Text(
+                            'data'), //Text(snapshot.data?[index]['tipoDocumento']),
+                        onChanged: (onChanged) {})
+                  ],
+                ),
+              );
+            }
+            //children: _listaDocumento(snapshot.data ?? [], context),
+            );
+      },
+    );
+  }
+
   List<Widget> _listaDocumento(List<dynamic> data, BuildContext context) {
     final List<Widget> documentos = [];
     int indice = 0;
-    _isChecked = List<bool>.filled(data.length, false);
-
-    for (var i = 0; i < data.length; i++) {
-      double pagadoDecimal =
-          data[i]['montoMonedaOrg'] - data[i]['saldoMonedaOrg'];
-      String pagado = pagadoDecimal.toStringAsFixed(2);
-      _montoTotal.text = data[i]['montoMonedaOrg'].toString();
-
-      valorcitoAux = _isChecked[i];
-
-      final widgetTemporal = Container(
-        padding: EdgeInsets.only(left: 6.0, right: 10.0, top: 6.0, bottom: 6.0),
-        decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(5),
-            border: Border.all(color: Colors.grey, width: 1.0),
-            gradient: RadialGradient(colors: [
-              Colors.white,
-              Color.fromRGBO(128, 194, 251, 0.2),
-            ], radius: 4.0, center: Alignment.center)),
-        child: Row(
-          children: [
-            Transform.scale(
-              scale: 1.7,
-              child: Checkbox(
-                  value: valorcitoAux, //_isChecked[i],
-                  activeColor: Color.fromRGBO(97, 0, 236, 1),
-                  side: BorderSide(width: 1.0, color: Colors.grey),
-                  onChanged: (val) {
-                    setState(() {
-                      this.valorcitoAux = val!;
-
-                      print(_isChecked);
-                    });
-                    //_listar(widget.PKCliente);
-                  }),
-            ),
-            SizedBox(
-              width: 5.0,
-            ),
-            Expanded(
-              child: Column(
-                children: [
-                  Row(
-                    children: [
-                      Text(
-                        data[i]['numDocumento'],
-                        style: TextStyle(
-                            color: Color.fromRGBO(78, 77, 111, 1),
-                            fontWeight: FontWeight.w400,
-                            fontSize: 17.0),
-                      ),
-                      SizedBox(
-                        width: 10.0,
-                      ),
-                      Text(
-                        data[i]['fechaVencimiento'],
-                        style: TextStyle(
-                            color: Color.fromRGBO(78, 77, 111, 1),
-                            fontWeight: FontWeight.w400,
-                            fontSize: 17.0),
-                      )
-                    ],
-                  ),
-                  SizedBox(
-                    height: 5.0,
-                  ),
-                  Row(
-                    children: [
-                      Text(
-                        data[i]['monedaVenta'],
-                        style: TextStyle(
-                            color: Colors.black,
-                            fontWeight: FontWeight.w400,
-                            fontSize: 16.0),
-                      ),
-                      SizedBox(
-                        width: 5.0,
-                      ),
-                      Text(
-                        'Total : S/ ${data[i]['montoMonedaOrg']}',
-                        style: TextStyle(
-                            color: Colors.black,
-                            fontWeight: FontWeight.w400,
-                            fontSize: 16.0),
-                      )
-                    ],
-                  ),
-                  SizedBox(
-                    height: 5.0,
-                  ),
-                  Row(
-                    children: [
-                      Text(
-                        'Pag: S/ ${pagado}',
-                        style: TextStyle(
-                            color: Colors.green[600],
-                            fontWeight: FontWeight.w400,
-                            fontSize: 15.0),
-                      ),
-                      SizedBox(
-                        width: 5.0,
-                      ),
-                      Text(
-                        'Pend: S/ ${data[i]['saldoMonedaOrg']}',
-                        style: TextStyle(
-                            color: Colors.red,
-                            fontWeight: FontWeight.w400,
-                            fontSize: 15.0),
-                      )
-                    ],
-                  )
-                ],
-              ),
-            ),
-            SizedBox(
-              width: 5.0,
-            ),
-            GestureDetector(
-              child: Container(
-                height: 50.0,
-                width: 50.0,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                    color: Color.fromRGBO(128, 194, 251, 1),
-                    borderRadius: BorderRadius.circular(15),
-                    border: Border.all(
-                        color: Color.fromRGBO(67, 143, 207, 1), width: 1.0)),
-                child: Icon(
-                  Icons.edit,
-                  color: Colors.white,
-                ),
-              ),
-              onTap: () {
-                showDialog(
-                    context: context,
-                    builder: (context) {
-                      return AlertDialog(
-                        scrollable: true,
-                        title: Center(
-                          child: Text('Documento Pendiente'),
-                        ),
-                        content: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Center(
-                              child: Text(
-                                data[i]['numDocumento'],
-                                style: TextStyle(
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 18.0),
-                              ),
-                            ),
-                            SizedBox(
-                              height: 20.0,
-                            ),
-                            Text('Monto Total S/.'),
-                            SizedBox(
-                              height: 5,
-                            ),
-                            TextField(
-                                enabled: false,
-                                keyboardType: TextInputType.phone,
-                                controller: _montoTotal,
-                                textAlign: TextAlign.center,
-                                maxLines: 1,
-                                decoration: new InputDecoration(
-                                  contentPadding: EdgeInsets.all(5.0),
-                                  isDense: true,
-                                  enabledBorder: const OutlineInputBorder(
-                                    borderSide: const BorderSide(
-                                        color: Colors.grey, width: 0.0),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderSide: const BorderSide(
-                                        color: Colors.grey, width: 0.0),
-                                  ),
-                                  disabledBorder: const OutlineInputBorder(
-                                    borderSide: const BorderSide(
-                                        color: Colors.grey, width: 0.0),
-                                  ),
-                                )),
-                            SizedBox(
-                              height: 20.0,
-                            ),
-                            Text('Monto Pagar S/.'),
-                            SizedBox(
-                              height: 5,
-                            ),
-                            TextField(
-                                keyboardType: TextInputType.phone,
-                                controller: _saldoPagar,
-                                textAlign: TextAlign.center,
-                                maxLines: 1,
-                                decoration: new InputDecoration(
-                                  contentPadding: EdgeInsets.all(5.0),
-                                  isDense: true,
-                                  enabledBorder: const OutlineInputBorder(
-                                    borderSide: const BorderSide(
-                                        color: Colors.grey, width: 0.0),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderSide: const BorderSide(
-                                        color: Colors.grey, width: 0.0),
-                                  ),
-                                )),
-                            SizedBox(
-                              height: 20.0,
-                            ),
-                            Row(
-                              children: [
-                                Expanded(
-                                    child: MaterialButton(
-                                        color: _colorBtn,
-                                        shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(5.0)),
-                                        child: Text(
-                                          'Aceptar',
-                                          style: TextStyle(color: _textBtn),
-                                        ),
-                                        onPressed: () async {})),
-                                SizedBox(
-                                  width: 10.0,
-                                ),
-                                Expanded(
-                                    child: MaterialButton(
-                                        //color: Colors.red[200],
-                                        shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(5.0),
-                                            side: BorderSide(
-                                                color: _colorBtn, width: 2.0)),
-                                        child: Text(
-                                          'Cancelar',
-                                          style: TextStyle(color: _colorBtn),
-                                        ),
-                                        onPressed: () {
-                                          Navigator.pop(context);
-                                        }))
-                              ],
-                            )
-                          ],
-                        ),
-                      );
-                    });
-              },
-            )
-          ],
-        ),
-      );
-    }
+    //_isChecked = List<bool>.filled(data.length, false);
 
     data.forEach((element) {
       double pagadoDecimal =
@@ -374,28 +188,16 @@ class _AgregarDocumentoState extends State<AgregarDocumento> {
       final widgetTemporal = Container(
         padding: EdgeInsets.only(left: 6.0, right: 10.0, top: 6.0, bottom: 6.0),
         decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(5),
-            border: Border.all(color: Colors.grey, width: 1.0),
-            gradient: RadialGradient(colors: [
-              Colors.white,
-              Color.fromRGBO(128, 194, 251, 0.2),
-            ], radius: 4.0, center: Alignment.center)),
+          borderRadius: BorderRadius.circular(5),
+          border: Border.all(color: Colors.grey, width: 1.0),
+          color: (_estado == 0)
+              ? Color.fromRGBO(228, 227, 240, 1)
+              : Color.fromRGBO(248, 195, 74, 1), //_colorFondito
+        ),
         child: Row(
           children: [
-            Transform.scale(
-              scale: 1.7,
-              child: Checkbox(
-                  value: _isChecked[indice],
-                  activeColor: Color.fromRGBO(97, 0, 236, 1),
-                  side: BorderSide(width: 1.0, color: Colors.grey),
-                  onChanged: (val) {
-                    setState(() {
-                      _isChecked[indice] = val!;
-                      print(_isChecked);
-                    });
-                    //_listar(widget.PKCliente);
-                  }),
-            ),
+            _checkboxAux(), //Exercise(element['PKDocumento']),
+
             SizedBox(
               width: 5.0,
             ),
@@ -624,6 +426,22 @@ class _AgregarDocumentoState extends State<AgregarDocumento> {
     return documentos;
   }
 
+  Widget _check() {
+    bool selected = false;
+
+    return Transform.scale(
+        scale: 1.7,
+        child: Checkbox(
+            value: selected,
+            activeColor: Color.fromRGBO(97, 0, 236, 1),
+            side: BorderSide(width: 1.0, color: Colors.grey),
+            onChanged: (val) {
+              setState(() {
+                selected = val!;
+              });
+            }));
+  }
+
   Widget _textDisponible() {
     return FutureBuilder(
       future: getDisponible(),
@@ -636,5 +454,59 @@ class _AgregarDocumentoState extends State<AgregarDocumento> {
         );
       },
     );
+  }
+
+  Widget _checkboxAux() {
+    bool selected = false;
+
+    return Transform.scale(
+        scale: 1.7,
+        child: Checkbox(
+            value: selected,
+            activeColor: Color.fromRGBO(97, 0, 236, 1),
+            side: BorderSide(width: 1.0, color: Colors.grey),
+            onChanged: (bool? val) {
+              setState(() {
+                //print(widget.idDocumento);
+                selected = val!;
+                print(_estado);
+                _colorFondito = Color.fromRGBO(248, 195, 74, 1);
+                _estado = 1;
+                print(_estado);
+              });
+            }));
+  }
+}
+
+class Exercise extends StatefulWidget {
+  int idDocumento;
+
+  Exercise(this.idDocumento, {Key? key}) : super(key: key);
+
+  @override
+  _ExerciseState createState() => _ExerciseState();
+}
+
+class _ExerciseState extends State<Exercise> {
+  bool selected = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Transform.scale(
+        scale: 1.7,
+        child: Checkbox(
+            value: selected,
+            activeColor: Color.fromRGBO(97, 0, 236, 1),
+            side: BorderSide(width: 1.0, color: Colors.grey),
+            onChanged: (bool? val) {
+              setState(() {
+                print(widget.idDocumento);
+                selected = val!;
+                print(_estado);
+                _colorFondito = Color.fromRGBO(248, 195, 74, 1);
+                _estado = 1;
+                print(_estado);
+              });
+            }));
   }
 }
