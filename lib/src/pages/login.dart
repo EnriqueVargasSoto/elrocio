@@ -18,24 +18,32 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  /*-------------------------- VARIABLES --------------------------*/
+  final EdgeInsets _paddingContainer =
+      EdgeInsets.only(top: 100.0, left: 25.0, right: 25.0);
+  final EdgeInsets _paddingLoading = EdgeInsets.symmetric(vertical: 20.0);
+
+  final String _ubicacionLogo = 'assets/header_login.png';
+  final String _ubicacionIconWaring = 'assets/warning.png';
+  final String _ubicacionIconCancelar = 'assets/cancelar.png';
+  final String _ubicacionIconComprobado = 'assets/comprobado.png';
+  final String _urlLogin =
+      "http://18.232.18.100/wscomercial/handlers/SC_LoginAndroid.ashx";
+
+  double _separacion = 20.0;
+
+  TextEditingController _usuario = TextEditingController();
+  TextEditingController _password = TextEditingController();
+
   Color _colorBtn = Color.fromRGBO(97, 0, 236, 1);
-  Color _textBtn = Colors.white;
+  Color _colorTextBtn = Colors.white;
 
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  Map<String, String> _headers = {
+    'Content-Type': 'application/json; charset=UTF-8'
+  };
+  Map<String, String> _bodyHttp = {};
 
-  final TextEditingController usuario = TextEditingController();
-  final TextEditingController password = TextEditingController();
-
-  Map<String, dynamic>? respuestaConsultaLogin;
-
-  int respuestaSincronizacion = 0;
-
-  String createTablePedido =
-      'CREATE TABLE IF NOT EXISTS TBL_PEDIDO( _id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL ,codigoServidor varchar(250) null, fechaPedido varchar(250) null,  fechaPedidoStr VARCHAR(250), codigoCliente VARCHAR(50), subcliente varchar(150), idTipoPedido VARCHAR(150), descTipoPedido VARCHAR(150), tipoPedido varchar(2), idListaPrecio VARCHAR(300), idFormaPago varchar(250), ordenCompra VARCHAR(300), idAlmacenVenta varchar(150), terminoPago VARCHAR(30), idtipoPedido numeric, tipoPedido VARCHAR(200), idListaPrecio numeric, listaPrecio VARCHAR(100), idTerritorio numeric, territorio VARCHAR(100), vendedorid numeric, subCliente VARCHAR(250), numeroItems numeric, fechaPedido VARCHAR(100), subTotal VARCHAR(30), igv VARCHAR(30), total VARCHAR(30), prioridad numeric);';
-
-  //String url =
-  //"https://qas-avicolas.rocio.com.pe/rocio-comercial/handlers/SC_LoginAndroid.ashx";
-  String url = "http://18.232.18.100/wscomercial/handlers/SC_LoginAndroid.ashx";
+  /*-------------------------- FIN VARIABLES --------------------------*/
 
   void pruebaConxion(context) async {
     try {
@@ -88,7 +96,7 @@ class _LoginPageState extends State<LoginPage> {
                                   borderRadius: BorderRadius.circular(5.0)),
                               child: Text(
                                 'OK',
-                                style: TextStyle(color: _textBtn),
+                                style: TextStyle(color: _colorTextBtn),
                               ),
                               onPressed: () {
                                 Navigator.pop(context);
@@ -144,13 +152,13 @@ class _LoginPageState extends State<LoginPage> {
           );
         });
 
-    var postUsuario = usuario.text;
-    var appleInBytes = utf8.encode(password.text);
+    var postUsuario = _usuario.text;
+    var appleInBytes = utf8.encode(_password.text);
     var postPassword = sha1.convert(appleInBytes);
 
     await http
         .post(
-      Uri.parse(url),
+      Uri.parse(_urlLogin),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
@@ -242,13 +250,13 @@ class _LoginPageState extends State<LoginPage> {
                                             BorderRadius.circular(5.0)),
                                     child: Text(
                                       'OK',
-                                      style: TextStyle(color: _textBtn),
+                                      style: TextStyle(color: _colorTextBtn),
                                     ),
                                     onPressed: () {
-                                      var ruta = MaterialPageRoute(
+                                      /*var ruta = MaterialPageRoute(
                                           builder: (context) => HomePage());
                                       Navigator.of(_scaffoldKey.currentContext!)
-                                          .push(ruta);
+                                          .push(ruta);*/
                                     }))
                           ],
                         )
@@ -301,7 +309,7 @@ class _LoginPageState extends State<LoginPage> {
                                     borderRadius: BorderRadius.circular(5.0)),
                                 child: Text(
                                   'OK',
-                                  style: TextStyle(color: _textBtn),
+                                  style: TextStyle(color: _colorTextBtn),
                                 ),
                                 onPressed: () {
                                   Navigator.pop(context);
@@ -345,8 +353,8 @@ class _LoginPageState extends State<LoginPage> {
 
   Future<void> validar(BuildContext context) async {
     SQLHelper.db();
-    if (usuario.text != '') {
-      if (password.text != '') {
+    if (_usuario.text != '') {
+      if (_password.text != '') {
         pruebaConxion(context);
       } else {
         return showDialog(
@@ -391,7 +399,7 @@ class _LoginPageState extends State<LoginPage> {
                                     borderRadius: BorderRadius.circular(5.0)),
                                 child: Text(
                                   'OK',
-                                  style: TextStyle(color: _textBtn),
+                                  style: TextStyle(color: _colorTextBtn),
                                 ),
                                 onPressed: () {
                                   Navigator.pop(context);
@@ -449,7 +457,7 @@ class _LoginPageState extends State<LoginPage> {
                                   borderRadius: BorderRadius.circular(5.0)),
                               child: Text(
                                 'OK',
-                                style: TextStyle(color: _textBtn),
+                                style: TextStyle(color: _colorTextBtn),
                               ),
                               onPressed: () {
                                 Navigator.pop(context);
@@ -475,84 +483,81 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void initState() {
-    startApp();
+    //startApp();
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      key: _scaffoldKey,
-      body: Container(
-        padding: EdgeInsets.only(top: 100.0, left: 25.0, right: 25.0),
-        child: ListView(
-          children: [imagen(), inputUsuario(), inputPassword(), btnLogin()],
-        ),
+    return WillPopScope(
+      onWillPop: () async {
+        return false;
+      },
+      child: Scaffold(body: _body()),
+    );
+  }
+
+  Widget _body() {
+    return Container(
+      padding: _paddingContainer,
+      child: ListView(
+        physics: const NeverScrollableScrollPhysics(),
+        children: [
+          _imagen(),
+          SizedBox(
+            height: _separacion,
+          ),
+          _inputUsuario(),
+          SizedBox(
+            height: _separacion,
+          ),
+          _inputPassword(),
+          SizedBox(
+            height: _separacion,
+          ),
+          _btnLogin()
+        ],
       ),
     );
   }
 
-  Widget imagen() {
-    return Row(
-      children: [
-        Expanded(
-            child: Center(
-          child: Image(image: AssetImage('assets/header_login.png')),
-        ))
-      ],
+  Widget _imagen() {
+    return Center(
+      child: Image(image: AssetImage(_ubicacionLogo)),
     );
   }
 
-  Widget inputUsuario() {
-    return Row(
-      children: [
-        Expanded(
-            child: Center(
-          child: TextField(
-            keyboardType: TextInputType.phone,
-            controller: usuario,
-            decoration: new InputDecoration(labelText: 'User'),
-          ),
-        ))
-      ],
+  Widget _inputUsuario() {
+    return Center(
+      child: TextField(
+        keyboardType: TextInputType.phone,
+        controller: _usuario,
+        decoration: new InputDecoration(labelText: 'User'),
+      ),
     );
   }
 
-  Widget inputPassword() {
-    return Row(
-      children: [
-        Expanded(
-            child: Center(
-          child: TextField(
-            keyboardType: TextInputType.phone,
-            obscureText: true,
-            controller: password,
-            decoration: new InputDecoration(labelText: 'Password'),
-          ),
-        ))
-      ],
+  Widget _inputPassword() {
+    return Center(
+      child: TextField(
+        keyboardType: TextInputType.phone,
+        obscureText: true,
+        controller: _password,
+        decoration: new InputDecoration(labelText: 'Password'),
+      ),
     );
   }
 
-  Widget btnLogin() {
-    return Row(
-      children: [
-        Expanded(
-            child: Center(
-          child: Container(
-            margin: EdgeInsets.only(top: 20.0),
-            child: MaterialButton(
-                color: Color.fromRGBO(97, 0, 236, 1),
-                child: Text(
-                  'INGRESAR',
-                  style: TextStyle(color: Colors.white),
-                ),
-                onPressed: () {
-                  validar(context);
-                }),
-          ),
-        ))
-      ],
-    );
+  Widget _btnLogin() {
+    return Center(
+        child: MaterialButton(
+            color: _colorBtn,
+            child: Text(
+              '  INGRESAR  ',
+              style: TextStyle(color: _colorTextBtn),
+            ),
+            onPressed: () {
+              //validaUsuario(context);
+            }));
   }
 }

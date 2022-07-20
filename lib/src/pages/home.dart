@@ -40,6 +40,10 @@ class _HomePageState extends State<HomePage> {
 
   Widget build(BuildContext context) {
     return SafeArea(
+        child: WillPopScope(
+      onWillPop: () async {
+        return false;
+      },
       child: Scaffold(
         appBar: AppBar(
             backgroundColor: Color.fromRGBO(97, 0, 236, 1),
@@ -50,7 +54,7 @@ class _HomePageState extends State<HomePage> {
           child: _mensaje(),
         ),
       ),
-    );
+    ));
   }
 
   Widget _drawer() {

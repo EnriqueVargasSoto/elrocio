@@ -25,7 +25,7 @@ class _AgregarDocumentoState extends State<AgregarDocumento> {
   TextEditingController _montoTotal = TextEditingController();
   TextEditingController _saldoPagar = TextEditingController();
 
-  List<bool> _isChecked = [];
+  //List<bool> _isChecked = [];
   late bool valorcitoAux;
 
   RadialGradient auxColor = RadialGradient(colors: [
@@ -34,10 +34,12 @@ class _AgregarDocumentoState extends State<AgregarDocumento> {
   ], radius: 4.0, center: Alignment.center);
 
   //Color _coloFondo = Color.fromRGBO(228, 227, 240, 1);
-
+  late List<bool> _isChecked;
+  List<dynamic> auxArrNew = [];
   Future<List<dynamic>> getDocumentos(idCliente) async {
     List<dynamic> arrDocumentos = await SQLHelper.getDocumentos(idCliente);
     List<dynamic> auxArr = [];
+    _isChecked = List<bool>.filled(arrDocumentos.length, false);
     arrDocumentos.forEach((element) {
       var arrAux = {
         'estado': true,
@@ -68,6 +70,16 @@ class _AgregarDocumentoState extends State<AgregarDocumento> {
     String _dispo = widget.monto;
     _disponible = double.parse(_dispo);
     return _dispo;
+  }
+
+  void initState() {
+    super.initState();
+    getDocumentos(widget.PKCliente).then((value) {
+      setState(() {
+        _isChecked = List<bool>.filled(value.length, false);
+        auxArrNew = value;
+      });
+    });
   }
 
   @override
@@ -124,7 +136,9 @@ class _AgregarDocumentoState extends State<AgregarDocumento> {
               SizedBox(
                 height: 5.0,
               ),
-              Expanded(child: _listita(widget.PKCliente))
+              Expanded(
+                child: asdf(context), /*_listita(widget.PKCliente)*/
+              )
             ],
           ),
         ),
@@ -152,27 +166,39 @@ class _AgregarDocumentoState extends State<AgregarDocumento> {
         return ListView.builder(
             itemCount: snapshot.data?.length,
             itemBuilder: (BuildContext context, int index) {
-              return Container(
-                padding: EdgeInsets.only(
-                    left: 6.0, right: 10.0, top: 6.0, bottom: 6.0),
-                child: Row(
-                  children: [
-                    CheckboxListTile(
-                        controlAffinity: ListTileControlAffinity.leading,
-                        activeColor: Colors.pink[300],
-                        dense: true,
-                        value: false, //snapshot.data![index]['estado'],
-                        title: Text(
-                            'data'), //Text(snapshot.data?[index]['tipoDocumento']),
-                        onChanged: (onChanged) {})
-                  ],
-                ),
+              return CheckboxListTile(
+                title: Text('snapshot.data?[index]'),
+                value: _isChecked[index],
+                onChanged: (val) {
+                  setState(
+                    () {
+                      _isChecked[index] = val!;
+                    },
+                  );
+                },
               );
             }
             //children: _listaDocumento(snapshot.data ?? [], context),
             );
       },
     );
+  }
+
+  Widget asdf(context) {
+    return ListView.builder(
+        itemCount: auxArrNew.length,
+        itemBuilder: (context, index) {
+          return CheckboxListTile(
+              title: Text(auxArrNew[index]['numDocumento']),
+              value: _isChecked[index],
+              onChanged: (val) {
+                setState(
+                  () {
+                    _isChecked[index] = val!;
+                  },
+                );
+              });
+        });
   }
 
   List<Widget> _listaDocumento(List<dynamic> data, BuildContext context) {
@@ -196,8 +222,7 @@ class _AgregarDocumentoState extends State<AgregarDocumento> {
         ),
         child: Row(
           children: [
-            _checkboxAux(), //Exercise(element['PKDocumento']),
-
+            Exercise(element['PKDocumento']),
             SizedBox(
               width: 5.0,
             ),

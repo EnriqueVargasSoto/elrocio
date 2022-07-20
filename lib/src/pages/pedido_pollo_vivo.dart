@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:elrocio/src/services/cart.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class PedidoPolloVivo extends StatefulWidget {
   int PKCliente;
@@ -60,6 +61,8 @@ class PedidoPolloVivo extends StatefulWidget {
 }
 
 class _PedidoPolloVivoState extends State<PedidoPolloVivo> {
+  Color _colorBtn = Color.fromRGBO(97, 0, 236, 1);
+  Color _textBtn = Colors.white;
   int cantItems = 0; //cart.getCartItemCount();
   double total = 0.0;
 
@@ -98,12 +101,91 @@ class _PedidoPolloVivoState extends State<PedidoPolloVivo> {
 
   Widget _backButton() {
     return BackButton(onPressed: () {
-      Cart.vaciarCarrito();
+      showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              scrollable: true,
+              content: Column(
+                children: [
+                  Center(
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.warning_rounded,
+                          size: 50.0,
+                          color: Colors.amber[700],
+                        ),
+                        Text('ATENCION',
+                            style: TextStyle(
+                                fontWeight: FontWeight.w400, fontSize: 17.0)),
+                      ],
+                    ),
+                  ),
+                  Divider(),
+                  SizedBox(
+                    height: 10,
+                  ),
+                  Text('Perderá los datos del pedido. '),
+                  Text('¿Está seguro que desea regresar?'),
+                  SizedBox(
+                    height: 10,
+                  ),
+                  Divider(),
+                  SizedBox(
+                    height: 10,
+                  ),
+                  Row(
+                    children: [
+                      Expanded(
+                          child: MaterialButton(
+                              color: _colorBtn,
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(5.0)),
+                              child: Text(
+                                'OK',
+                                style: TextStyle(color: _textBtn),
+                              ),
+                              onPressed: () {
+                                Navigator.pop(context);
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => DetalleCliente(
+                                            widget.PKCliente,
+                                            widget.doc_cliente,
+                                            widget.nombre,
+                                            widget.saldopendiente)));
+                              })),
+                      SizedBox(
+                        width: 10.0,
+                      ),
+                      Expanded(
+                          child: MaterialButton(
+                              //color: Colors.red[200],
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(5.0),
+                                  side:
+                                      BorderSide(color: _colorBtn, width: 2.0)),
+                              child: Text(
+                                'NO',
+                                style: TextStyle(color: _colorBtn),
+                              ),
+                              onPressed: () {
+                                Navigator.pop(context);
+                              }))
+                    ],
+                  )
+                ],
+              ),
+            );
+          });
+      /*Cart.vaciarCarrito();
       Navigator.push(
           context,
           MaterialPageRoute(
               builder: (context) => DetalleCliente(widget.PKCliente,
-                  widget.doc_cliente, widget.nombre, widget.saldopendiente)));
+                  widget.doc_cliente, widget.nombre, widget.saldopendiente)));*/
     });
   }
 
@@ -372,32 +454,46 @@ class _PedidoPolloVivoState extends State<PedidoPolloVivo> {
     return FloatingActionButton(
       backgroundColor: Color.fromRGBO(97, 0, 236, 1),
       onPressed: () {
-        setState(() {
-          var ruta = MaterialPageRoute(
-              builder: (context) => FinalizaPedido(
-                  widget.PKCliente,
-                  widget.nombre,
-                  widget.direccion,
-                  widget.fechaTexto,
-                  widget.fechaDate,
-                  widget.subcliente,
-                  widget.iddireccionFacturacion,
-                  widget.direccionFacturacion,
-                  widget.iddireccionEnvio,
-                  widget.direccionEnvio,
-                  widget.idterminoPago,
-                  widget.terminoPago,
-                  widget.idtipoPedido,
-                  widget.tipoPedido,
-                  widget.idListaPrecio,
-                  widget.listaPrecio,
-                  widget.idTerritorio,
-                  widget.territorio,
-                  widget.vendedorid,
-                  widget.doc_cliente,
-                  widget.saldopendiente,
-                  widget.siglas));
-          Navigator.push(context, ruta);
+        setState(() async {
+          List<dynamic> auxArr = await getCarrito();
+          print(auxArr.length);
+          print(auxArr.length > 0);
+          if (auxArr.length > 0) {
+            var ruta = MaterialPageRoute(
+                builder: (context) => FinalizaPedido(
+                    widget.PKCliente,
+                    widget.nombre,
+                    widget.direccion,
+                    widget.fechaTexto,
+                    widget.fechaDate,
+                    widget.subcliente,
+                    widget.iddireccionFacturacion,
+                    widget.direccionFacturacion,
+                    widget.iddireccionEnvio,
+                    widget.direccionEnvio,
+                    widget.idterminoPago,
+                    widget.terminoPago,
+                    widget.idtipoPedido,
+                    widget.tipoPedido,
+                    widget.idListaPrecio,
+                    widget.listaPrecio,
+                    widget.idTerritorio,
+                    widget.territorio,
+                    widget.vendedorid,
+                    widget.doc_cliente,
+                    widget.saldopendiente,
+                    widget.siglas));
+            Navigator.push(context, ruta);
+          } else {
+            Fluttertoast.showToast(
+              msg: 'Su carrito esta vacío',
+              //toastLength: Toast.LENGTH_SHORT,
+              //gravity: ToastGravity.BOTTOM,
+              //timeInSecForIos: 1,
+              //backgroundColor: Colors.red,
+              /*textColor: Colors.yellow*/
+            );
+          }
         });
       },
       tooltip: 'Increment Counter',
